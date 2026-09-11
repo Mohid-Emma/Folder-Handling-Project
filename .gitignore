@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.json.bak
+.vscode/
+.idea/
+database/library.db
+build/
+dist/
+*.spec
+
