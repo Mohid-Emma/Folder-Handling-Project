@@ -9,10 +9,11 @@ class App:
     def __init__(self):
         self.rename = None
 
-        self.window = MainWindow(
+        self.main_window = MainWindow(
             on_folder_selected = self.set_folder,
             on_preview         = self.set_preview,
-            on_rename          = self.set_rename_files)
+            on_rename          = self.set_rename_files,
+            on_result          = self.set_result)
                 
 
     def set_folder(self, folder):
@@ -21,13 +22,19 @@ class App:
     def set_preview(self):
         if self.rename:
             rename_plan = self.rename.create_rename_folder()
-            self.window.show_preview(rename_plan)
+            self.main_window.show_preview(rename_plan)
 
     def set_rename_files(self):
         if self.rename:
-            success = self.rename.rename_files()
-            self.window.show_status(success)
+            success, error, self.rename_plan = self.rename.rename_files()
+            if success:
+                status, data = self.rename.check_result()
+                self.main_window.show_status(status, data)
+            else:
+                self.main_window.show_status("error", error)
 
-
+    def set_result(self):
+            self.main_window.show_preview(self.rename_plan)
+            
     def run(self):
-        self.window.mainloop()
+        self.main_window.mainloop()
