@@ -1,22 +1,30 @@
 # theme.py
 
-border        = "#334155"
-background    = "#0F172A"
-sidebar       = "#111827"
-surface       = "#1E293B"
-surface_hover = "#334155"
-surface_light = "#273449"
 
-accent        = "#3B82F6"
-accent_hover  = "#2563EB"
+background           = "#0F172A"
+sidebar              = "#111827" 
 
-text          = "#F8FAFC"
-text_muted    = "#94A3B8"
+panel                = "#1E293B"
+panel_light          = "#273449"
+border               = "#334155"
 
-success       = "#22C55E"
-success_hover = "#1EAD53"
-danger        = "#EF4444"
-danger_hover  = "#D43A3A"
-warning       = "#F59E0B"
+text_primary         = "#F8FAFC"
+text_secondary       = "#94A3B8"
 
-transparent   =   "transparent"
+action               = "#3B82F6"
+action_hover         = "#2563EB"
+action_disable       = "#7F859F"
+action_disable_hover = "#787D94"
+
+
+success              = "#22C55E"
+success_hover        = "#1EAD53"
+warning              = "#F59E0B"
+error                = "#EF4444"
+error_hover          = "#D43A3A"
+
+surface              = "#1E293B"
+surface_hover        = "#334155"
+surface_light        = "#273449"
+
+transparent          =   "transparent"

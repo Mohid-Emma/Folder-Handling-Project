@@ -53,4 +53,4 @@ class RenameCard(ctk.CTkFrame):
             return theme.warning, "⚠ Already Exists"
 
         else:
-            return theme.danger, "Error"
+            return theme.error, "Error"
