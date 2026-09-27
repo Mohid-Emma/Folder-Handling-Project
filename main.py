@@ -1,5 +1,5 @@
 # main.py
-from app import App
+from controller import App
 
 def main():
     app = App()

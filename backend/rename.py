@@ -3,21 +3,26 @@
 from pathlib import Path
 
 class Rename:
-    def __init__(self, folder):
-        self.folder       = Path(folder)
-        self.rename_plan  = []
-        self.rename_count = 0
-        self.folder_count = 0
+    def __init__(self, folder, extension, pattern, quality):
+        self.folder         = Path(folder)
+        self.rename_plan    = []
+        self.rename_count   = 0
+        self.folder_count   = 0
+        
+        self.extension = extension
+        self.pattern   = pattern
+        self.quality   = quality
 
     def create_rename_folder(self):
         self.rename_plan  = []
         self.folder_count = 0
-        for i, item in enumerate(self.folder.glob("*.mp4"), start=1):
+        print(self.extension)
+        for i, item in enumerate(self.folder.glob(f"*{self.extension}"), start=1):
 
             self.folder_count += 1
-            
+            new_base_name = self.pattern.format(i=i)
             #new_name = self.folder / f"EP.{i:02}.v0.720p.mp4"
-            new_name = self.folder / f"EP.{i:02}.v0.1080p.mp4"
+            new_name = self.folder / f"{new_base_name}{self.extension}"
 
             if new_name.exists():
                 self.rename_plan.append([item, new_name, "Exist"])

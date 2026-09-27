@@ -64,3 +64,6 @@ class SourceFile(ctk.CTkFrame):
             self.folder_entry.delete(0, "end")
             self.folder_entry.insert(0, folder)
             self.folder_path = folder
+
+    def get_folder_path(self):
+        return self.folder_path

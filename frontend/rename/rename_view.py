@@ -23,6 +23,12 @@ class RenameView(ctk.CTkScrollableFrame):
             RenameCard(self, old_name.name, new_name.name, status).grid(row=row, column=0, padx=5, pady=5, sticky="news")
 
     def create_title(self):
+        #self.title_label = ctk.CTkLabel(
+        #    master     = self.display_frame, 
+        #    text       = "Display Status", 
+        #    font       = ("Segoe UI", 24, "bold"))
+        #
+        #self.title_label.grid(row=0, column=0, padx=25, pady=10, sticky="w")
 
         title_frame = ctk.CTkFrame(self, corner_radius=0)
         title_frame.grid(row=0, column=0, sticky="news")

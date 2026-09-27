@@ -4,12 +4,32 @@ import customtkinter as     ctk
 from   config        import theme
 
 class RenameForm(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, on_preview_information, on_rename):
         super().__init__(master, fg_color= theme.panel_light)
+
+        self.on_rename              = on_rename
+        self.on_preview_information = on_preview_information
+
 
         self.create_layout()
         self.create_widget()
-        
+
+    def call_back(self):
+        pattern = self.pattern_entry.get().strip()
+        if pattern is None:
+            return
+
+        extension = self.extension_menu.get().strip()
+        if extension is None:
+            return
+
+        quality = self.quality_menu.get().strip()
+        if quality is None:
+            return
+        return pattern, extension, quality
+
+
+
     def create_layout(self):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -42,27 +62,29 @@ class RenameForm(ctk.CTkFrame):
             placeholder_text_color = theme.text_secondary,
             fg_color               = theme.background)
 
-        self.pattern_entry.grid(row=3, column=0, columnspan=2, padx=(20,0), pady=5, sticky="ew")
+        self.pattern_entry.grid(row=3, column=0, columnspan=2, padx=20, pady=5, sticky="ew")
 
-        self.type_label = ctk.CTkLabel(
+        self.extension_label = ctk.CTkLabel(
             master     = self, 
-            text       = "Type", 
+            text       = "extension", 
             font       = ("Segoe UI", 15, "bold"),
             text_color = theme.text_primary)
 
-        self.type_label.grid(row=4, column=0, padx=25, pady=10, sticky="w")
+        self.extension_label.grid(row=4, column=0, padx=25, pady=10, sticky="w")
 
-        type_option = [
+        extension_option = [
             ".mp3",
             ".mp4",
             ".mkv",
             ".txt",
             ".png",
-            ".jpg"]
+            ".jpg",
+            ".txt",
+            ".pdf"]
         
-        self.type_menu = ctk.CTkOptionMenu(
+        self.extension_menu = ctk.CTkOptionMenu(
             master               = self, 
-            values               = type_option, 
+            values               = extension_option, 
             command              = None,
             height               = 30,
             width                = 200,
@@ -76,8 +98,8 @@ class RenameForm(ctk.CTkFrame):
             dropdown_hover_color = theme.panel_light,
             dropdown_text_color  = theme.text_primary)
         
-        self.type_menu.set("Type By")
-        self.type_menu.grid(row=5, column=0, padx=(0,0))
+        self.extension_menu.set("Extension By")
+        self.extension_menu.grid(row=5, column=0, padx=(0,0))
 
         self.quality_label = ctk.CTkLabel(
             master     = self, 
@@ -87,15 +109,15 @@ class RenameForm(ctk.CTkFrame):
 
         self.quality_label.grid(row=6, column=0, padx=25, pady=10, sticky="w")
 
-        quailtied_option = [
+        qualitied_option = [
             "360p",
             "480p",
             "720p",
             "1080p"]
         
-        self.quailty_menu = ctk.CTkOptionMenu(
+        self.quality_menu = ctk.CTkOptionMenu(
             master               = self, 
-            values               = quailtied_option, 
+            values               = qualitied_option, 
             command              = None,
             height               = 30,
             width                = 200,
@@ -109,14 +131,14 @@ class RenameForm(ctk.CTkFrame):
             dropdown_hover_color = theme.panel_light,
             dropdown_text_color  = theme.text_primary)
         
-        self.quailty_menu.set("Quailty By")
-        self.quailty_menu.grid(row=7, column=0, padx=(0,0))
+        self.quality_menu.set("Quality By")
+        self.quality_menu.grid(row=7, column=0, padx=(0,0))
 
         self.preview_button = ctk.CTkButton(
             master      = self,
             text        = "Preview",
             font        = ("Segoe UI", 12, "bold"),
-            command     = None, #self.preview_rename,
+            command     = self.on_preview_information,
             text_color  = theme.text_primary,
             fg_color    = theme.action,
             hover_color = theme.action_hover)
@@ -127,10 +149,14 @@ class RenameForm(ctk.CTkFrame):
             master      = self,
             text        = "Rename",
             font        = ("Segoe UI", 12, "bold"),
-            command     = None, #self.confirmed_rename,
+            command     = self.on_rename, #self.confirmed_rename,
             text_color  = theme.text_primary,
             fg_color    = theme.action,
             hover_color = theme.action_hover)
         
         self.rename_button.grid(row=8, column=1, padx=15, pady=(15,5), sticky="ew")
 
+
+    # def file_inform(self):
+
+        

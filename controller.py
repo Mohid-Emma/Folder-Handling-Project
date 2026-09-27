@@ -1,4 +1,4 @@
-# app.py
+# controller.py
 
 from backend.rename       import Rename
 from frontend.main_window import MainWindow
@@ -10,14 +10,14 @@ class App:
         self.rename = None
 
         self.main_window = MainWindow(
-            on_folder_selected = self.set_folder,
-            on_preview         = self.set_preview,
-            on_rename          = self.set_rename_files,
-            on_result          = self.show_result)
+            on_folder  = self.set_folder,
+            on_preview = self.set_preview,
+            on_rename  = self.set_rename_files,
+            on_result  = self.show_result)
                 
 
-    def set_folder(self, folder):
-        self.rename = Rename(folder)
+    def set_folder(self, folder, extention=None, pattern=None, quality=None):
+        self.rename = Rename(folder, extention, pattern, quality)
 
     def set_preview(self):
         if self.rename:

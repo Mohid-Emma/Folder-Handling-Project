@@ -44,7 +44,7 @@ class RenameCard(ctk.CTkFrame):
 
     def create_status(self):
         if self.status == "Ready":
-            return theme.text, "● Ready for Rename"
+            return theme.text_primary, "● Ready for Rename"
         
         elif self.status == "Finished":
             return theme.success, "● Renamed"

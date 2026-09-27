@@ -23,8 +23,4 @@ warning              = "#F59E0B"
 error                = "#EF4444"
 error_hover          = "#D43A3A"
 
-surface              = "#1E293B"
-surface_hover        = "#334155"
-surface_light        = "#273449"
-
 transparent          =   "transparent"

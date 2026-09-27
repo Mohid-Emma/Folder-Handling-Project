@@ -10,15 +10,15 @@ from   frontend.rename.rename_form   import RenameForm
 
 class MainWindow(ctk.CTk):
 
-    def __init__(self, on_folder_selected, on_preview, on_rename, on_result):
+    def __init__(self, on_folder, on_preview, on_rename, on_result):
         super().__init__(fg_color=theme.background)
 
-        self.on_folder_selected = on_folder_selected
-        self.on_preview         = on_preview
-        self.on_rename          = on_rename
-        self.on_result          = on_result
+        self.on_folder  = on_folder
+        self.on_preview = on_preview
+        self.on_rename  = on_rename
+        self.on_result  = on_result
 
-        self.current_tool       = "rename"
+        self.current_tool  = "rename"
 
 
         self.title("File & Folder Manager")
@@ -135,7 +135,7 @@ class MainWindow(ctk.CTk):
         button = ctk.CTkButton(
             master      = parent,
             text        = text,
-            font        = ("Segoe UI", 10, "bold"),
+            font        = ("Segoe UI", 12, "bold"),
             command     = command,
             fg_color    = fg_color,
             text_color  = theme.text_primary,
@@ -157,13 +157,13 @@ class MainWindow(ctk.CTk):
             master   = self.main_frame, 
             fg_color = theme.transparent)
         
-        title_frame.grid(row=0, column=0, columnspan=2, padx=20, pady=20, sticky="news")
+        title_frame.grid(row=0, column=0, columnspan=2, padx=20, pady=(10,5), sticky="news")
         title_frame.grid_columnconfigure(0, weight=1)
 
         self.main_content_title = ctk.CTkLabel(
             master     = title_frame, 
             text       = "Bulk Rename", 
-            font       = ("Segoe UI", 15, "bold"),
+            font       = ("Segoe UI", 18, "bold"),
             text_color = theme.text_primary)
         
         self.main_content_title.grid(row=0, column=0 ,padx=25, pady=5, sticky="w")
@@ -177,29 +177,25 @@ class MainWindow(ctk.CTk):
         self.main_content_discription.grid(row=1, column=0 ,padx=25, pady=5, sticky="w")
 
         self.source_file = SourceFile(self.main_frame)
-        self.source_file.grid(row=1, column=0, columnspan=2, padx=20, pady=20, sticky="news")
+        self.source_file.grid(row=1, column=0, columnspan=2, padx=20, pady=10, sticky="news")
 
 
-        self.rename_form = RenameForm(self.main_frame)
+
+        self.rename_form = RenameForm(
+            master                 = self.main_frame, 
+            on_preview_information = self.preview_rename,
+            on_rename              = self.confirmed_rename)
+        
         self.rename_form.grid(row=2, column=0, padx=20, pady=20, sticky="news")
         self.rename_form.grid_propagate(False)
 
 
-        self.display_frame = ctk.CTkFrame(self.main_frame, corner_radius=0)
-        #self.display_frame.grid(row=0, column=1, sticky="news")
 
-        self.display_frame.grid_columnconfigure(0, weight=1)
-        self.display_frame.grid_rowconfigure(1, weight=1)
 
-        self.title_label = ctk.CTkLabel(
-            master     = self.display_frame, 
-            text       = "Display Status", 
-            font       = ("Segoe UI", 24, "bold"))
-        
-        self.title_label.grid(row=0, column=0, padx=25, pady=10, sticky="w")
 
-        self.rename_view = RenameView(self.display_frame)
-        self.rename_view.grid(row=1, column=0, padx=20, pady=20, sticky="news")
+        self.rename_view = RenameView(self.main_frame)
+        self.rename_view.grid(row=2, column=1, padx=20, pady=20, sticky="news")
+
 
     def create_footer(self):
         self.status_label = ctk.CTkLabel(
@@ -210,7 +206,23 @@ class MainWindow(ctk.CTk):
 
 
     def preview_rename(self):
-        self.on_preview()
+        print("Yes")
+        file_path = self.source_file.get_folder_path()
+        pattern, extension, quality = self.rename_form.call_back()
+        print(f"{file_path}\n {pattern}\n {extension}\n {quality}\n")
+        if file_path is not None and pattern is not None and extension is not None and quality is not None :
+            self.on_folder(file_path, extension, pattern, quality)
+            print("Yes")
+
+            self.on_preview()
+
+    def confirmed_rename(self):
+        dialog = RenameDialog(self)
+        self.wait_window(dialog)
+        if dialog.get_result():
+            self.on_rename()
+            self.on_result()
+
 
     def show_preview(self, rename_plan):
         self.rename_view.display_card(rename_plan)
