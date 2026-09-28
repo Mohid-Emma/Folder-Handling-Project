@@ -206,14 +206,10 @@ class MainWindow(ctk.CTk):
 
 
     def preview_rename(self):
-        print("Yes")
         file_path = self.source_file.get_folder_path()
         pattern, extension, quality = self.rename_form.call_back()
-        print(f"{file_path}\n {pattern}\n {extension}\n {quality}\n")
         if file_path is not None and pattern is not None and extension is not None and quality is not None :
             self.on_folder(file_path, extension, pattern, quality)
-            print("Yes")
-
             self.on_preview()
 
     def confirmed_rename(self):

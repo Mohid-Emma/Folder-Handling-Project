@@ -50,9 +50,8 @@ class RenameDialog(ctk.CTkToplevel):
             text        = "Cancel",
             font        = ("Segoe UI", 12, "bold"),
             command     = self.destroy,
-            text_color  = theme.text_primary,
-            fg_color    = theme.action,
-            hover_color = theme.action_hover)
+            fg_color    = theme.border,
+            hover_color = theme.panel_light)
         
         cancel_button.pack(pady=15, side="left", anchor="center")
 

@@ -16,7 +16,6 @@ class Rename:
     def create_rename_folder(self):
         self.rename_plan  = []
         self.folder_count = 0
-        print(self.extension)
         for i, item in enumerate(self.folder.glob(f"*{self.extension}"), start=1):
 
             self.folder_count += 1

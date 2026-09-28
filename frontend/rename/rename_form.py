@@ -66,7 +66,7 @@ class RenameForm(ctk.CTkFrame):
 
         self.extension_label = ctk.CTkLabel(
             master     = self, 
-            text       = "extension", 
+            text       = "Extension", 
             font       = ("Segoe UI", 15, "bold"),
             text_color = theme.text_primary)
 
@@ -99,7 +99,7 @@ class RenameForm(ctk.CTkFrame):
             dropdown_text_color  = theme.text_primary)
         
         self.extension_menu.set("Extension By")
-        self.extension_menu.grid(row=5, column=0, padx=(0,0))
+        self.extension_menu.grid(row=5, column=0, padx=(12,0))
 
         self.quality_label = ctk.CTkLabel(
             master     = self, 
@@ -132,7 +132,7 @@ class RenameForm(ctk.CTkFrame):
             dropdown_text_color  = theme.text_primary)
         
         self.quality_menu.set("Quality By")
-        self.quality_menu.grid(row=7, column=0, padx=(0,0))
+        self.quality_menu.grid(row=7, column=0, padx=(10,0))
 
         self.preview_button = ctk.CTkButton(
             master      = self,
