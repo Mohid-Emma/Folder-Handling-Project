@@ -16,8 +16,8 @@ class App:
             on_result  = self.show_result)
                 
 
-    def set_folder(self, folder, extention=None, pattern=None, quality=None):
-        self.rename = Rename(folder, extention, pattern, quality)
+    def set_folder(self, folder, extention, pattern, quality,start_number, number_foramt):
+        self.rename = Rename(folder, extention, pattern, quality, start_number, number_foramt)
 
     def set_preview(self):
         if self.rename:

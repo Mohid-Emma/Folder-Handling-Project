@@ -1,6 +1,7 @@
 # main_windows.py
 import customtkinter          as     ctk
 import config.theme           as     theme
+from   tkinter                       import messagebox
 from   frontend.source_file          import SourceFile
 from   frontend.rename.rename_view   import RenameView
 from   frontend.rename.rename_dialog import RenameDialog
@@ -179,8 +180,6 @@ class MainWindow(ctk.CTk):
         self.source_file = SourceFile(self.main_frame)
         self.source_file.grid(row=1, column=0, columnspan=2, padx=20, pady=10, sticky="news")
 
-
-
         self.rename_form = RenameForm(
             master                 = self.main_frame, 
             on_preview_information = self.preview_rename,
@@ -189,13 +188,8 @@ class MainWindow(ctk.CTk):
         self.rename_form.grid(row=2, column=0, padx=20, pady=20, sticky="news")
         self.rename_form.grid_propagate(False)
 
-
-
-
-
         self.rename_view = RenameView(self.main_frame)
         self.rename_view.grid(row=2, column=1, padx=20, pady=20, sticky="news")
-
 
     def create_footer(self):
         self.status_label = ctk.CTkLabel(
@@ -204,32 +198,47 @@ class MainWindow(ctk.CTk):
             font   = ("Segoe UI", 14, "bold"))
         self.status_label.pack(pady=10)
 
-
     def preview_rename(self):
         file_path = self.source_file.get_folder_path()
-        pattern, extension, quality = self.rename_form.call_back()
-        if file_path is not None and pattern is not None and extension is not None and quality is not None :
-            self.on_folder(file_path, extension, pattern, quality)
+        pattern, extension, quality, start_number, number_foramt = self.rename_form.call_back()
+
+        if file_path is None:
+            messagebox.showerror("Mssing Input", f"Folder Path is Missing\n"+" "*100)
+
+        elif not pattern:
+            messagebox.showerror("Mssing Input", f"Pattern is Missing\n"+" "*100)
+        
+        elif extension.strip() == "Extension By":
+            messagebox.showerror("Mssing Input", f"Extension is Missing\n"+" "*100)
+        
+        elif quality.strip() == "Quality By":
+            messagebox.showerror("Mssing Input", f"Quality is Missing\n"+" "*100)        
+        
+        elif start_number is None:
+            messagebox.showerror("Mssing Input", f"Folder Path is Missing\n"+" "*100)
+
+        elif number_foramt.strip() == "Number Format By":
+            messagebox.showerror("Mssing Input", f"Quality is Missing\n"+" "*100) 
+        
+        else:
+            self.on_folder(file_path, extension, pattern, quality, start_number, number_foramt)
             self.on_preview()
 
     def confirmed_rename(self):
-        dialog = RenameDialog(self)
-        self.wait_window(dialog)
-        if dialog.get_result():
-            self.on_rename()
-            self.on_result()
+        file_path = self.source_file.get_folder_path()
+        pattern, extension, quality, start_number, number_foramt = self.rename_form.call_back()
 
+        if (file_path is not None and pattern and extension.strip() != "Extension By") or \
+            (quality.strip() != "Quality By" and start_number is None and number_foramt.strip() == "Number Format By"and extension.strip() != "Extension By"):
+            
+            dialog = RenameDialog(self)
+            self.wait_window(dialog)
+            if dialog.get_result():
+                rename_plan = self.on_rename()
+                self.on_result(rename_plan)
 
     def show_preview(self, rename_plan):
         self.rename_view.display_card(rename_plan)
-
-    def confirmed_rename(self):
-        dialog = RenameDialog(self)
-        self.wait_window(dialog)
-        
-        if dialog.get_result():
-            rename_plan = self.on_rename()
-            self.on_result(rename_plan)
 
     def show_status(self, status, data):
         if status == "renamed":

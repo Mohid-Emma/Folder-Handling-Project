@@ -54,7 +54,6 @@ class SourceFile(ctk.CTkFrame):
             fg_color    = theme.action,
             hover_color = theme.action_hover)
 
-
         self.browse_button.grid(row=0, column=1, padx=15, pady=(15,5), sticky="ew")
 
     def browse_folder(self):
