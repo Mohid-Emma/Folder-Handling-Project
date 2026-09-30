@@ -3,6 +3,8 @@
 import customtkinter as     ctk
 from   config        import theme
 from   tkinter       import filedialog
+from   tkinter       import messagebox
+
 
 class SourceFile(ctk.CTkFrame):
     def __init__(self, master):
@@ -65,4 +67,7 @@ class SourceFile(ctk.CTkFrame):
             self.folder_path = folder
 
     def get_folder_path(self):
+        if self.folder_path is None:
+            messagebox.showerror("Mssing Input", f"Folder Path is Missing\n"+" "*100)
+            return None
         return self.folder_path
