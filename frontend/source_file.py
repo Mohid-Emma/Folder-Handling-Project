@@ -13,12 +13,14 @@ class SourceFile(ctk.CTkFrame):
         self.folder_path = None
 
         self.create_layout()
-        self.create_widget()
+        self.create_widgets()
 
+    # Create Layout
     def create_layout(self):
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1) # Source File Entry
 
-    def create_widget(self):
+    # Create Widgets
+    def create_widgets(self):
 
         self.title_label = ctk.CTkLabel(
             master     = self, 
@@ -58,6 +60,7 @@ class SourceFile(ctk.CTkFrame):
 
         self.browse_button.grid(row=0, column=1, padx=15, pady=(15,5), sticky="ew")
 
+    # Browsing for Folder
     def browse_folder(self):
         folder = filedialog.askdirectory()
         
@@ -66,6 +69,7 @@ class SourceFile(ctk.CTkFrame):
             self.folder_entry.insert(0, folder)
             self.folder_path = folder
 
+    # Return Folder Path
     def get_folder_path(self):
         if self.folder_path is None:
             messagebox.showerror("Mssing Input", f"Folder Path is Missing\n"+" "*100)

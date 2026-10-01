@@ -36,7 +36,7 @@ class MainWindow(ctk.CTk):
         self.create_main_content()
         self.create_footer()
 
-
+    # Create Layout 
     def create_layout(self):
 
         self.grid_rowconfigure(0, weight=0) # Header
@@ -46,6 +46,7 @@ class MainWindow(ctk.CTk):
         self.grid_columnconfigure(0, weight=0) # SideBar
         self.grid_columnconfigure(1, weight=1) # Main Content
 
+    # Create Frame
     def create_frame(self):
 
         self.header_frame = ctk.CTkFrame(
@@ -80,6 +81,7 @@ class MainWindow(ctk.CTk):
         self.footer_frame.grid(row=2, column=0, columnspan=2, sticky="news")
         self.footer_frame.grid_propagate(False)
 
+    # Create Header
     def create_header(self):
 
         self.header_frame.grid_columnconfigure(0, weight=1)
@@ -100,6 +102,7 @@ class MainWindow(ctk.CTk):
         
         self.header_status_label.grid(row=0, column=1, padx=25, sticky="e")
 
+    # Create SideBar
     def create_sidebar(self):
         self.side_bar_frame.grid_columnconfigure(0, weight=1)
 
@@ -125,6 +128,7 @@ class MainWindow(ctk.CTk):
         self.copy_btn     = self.create_button(self.side_bar_frame, "▣ Copy",     None, 5)
         self.search_btn   = self.create_button(self.side_bar_frame, "▣ Search",   None, 6)
         
+    # Create Button
     def create_button(self, parent, text, command, row, active=False):
         if active:
             fg_color    = theme.action
@@ -153,6 +157,8 @@ class MainWindow(ctk.CTk):
         self.main_frame.grid_columnconfigure(0, weight=1) # Setting
         self.main_frame.grid_columnconfigure(1, weight=2) # Preview
 
+        # Create Title For Main Contain
+
         title_frame = ctk.CTkFrame(
             master   = self.main_frame, 
             fg_color = theme.transparent)
@@ -176,8 +182,12 @@ class MainWindow(ctk.CTk):
         
         self.main_content_discription.grid(row=1, column=0 ,padx=25, pady=5, sticky="w")
 
+        # Create Source File
+
         self.source_file = SourceFile(self.main_frame)
         self.source_file.grid(row=1, column=0, columnspan=2, padx=20, pady=10, sticky="news")
+
+        # Create Rename Form
 
         self.rename_form = RenameForm(
             master                 = self.main_frame, 
@@ -187,9 +197,12 @@ class MainWindow(ctk.CTk):
         self.rename_form.grid(row=2, column=0, padx=20, pady=20, sticky="news")
         self.rename_form.grid_propagate(False)
 
+        # Create Rename Preview
+
         self.rename_view = RenameView(self.main_frame)
         self.rename_view.grid(row=2, column=1, padx=20, pady=20, sticky="news")
 
+    # Create Footer
     def create_footer(self):
         self.status_label = ctk.CTkLabel(
             master = self.footer_frame,
@@ -197,6 +210,8 @@ class MainWindow(ctk.CTk):
             font   = ("Segoe UI", 14, "bold"))
         self.status_label.pack(pady=10)
 
+
+    # Create Preview For Rename Files
     def preview_rename(self):
         file_path = self.source_file.get_folder_path()
         form_data = self.rename_form.call_back()
@@ -209,6 +224,7 @@ class MainWindow(ctk.CTk):
         self.on_folder(file_path, extension, pattern, quality, start_number, number_foramt)
         self.on_preview()
 
+    # Confirmed Rename Files
     def confirmed_rename(self):
         file_path = self.source_file.get_folder_path()
         form_data = self.rename_form.call_back()
@@ -224,9 +240,11 @@ class MainWindow(ctk.CTk):
 
             self.on_result(rename_plan)
 
+    # Show Preview For Rename Files
     def show_preview(self, rename_plan):
         self.rename_view.display_card(rename_plan)
 
+    # Show Status of the Final Result
     def show_status(self, status, data):
         if status == "renamed":
             self.status_label.configure(

@@ -1,7 +1,6 @@
 # rename.py 
 
 from pathlib import Path
-from tkinter import messagebox
 
 
 class Rename:
@@ -17,7 +16,8 @@ class Rename:
         self.start_number  = start_number
         self.number_foramt = number_foramt
 
-    def create_rename_folder(self):
+    # Create Rename Plan
+    def create_rename_folder(self): 
         self.rename_plan  = []
         self.folder_count = 0
 
@@ -40,6 +40,7 @@ class Rename:
             return None
         return self.rename_plan
 
+    # Rename Files
     def rename_files(self):
         self.rename_count = 0
         try:
@@ -54,6 +55,7 @@ class Rename:
         except OSError as e:
             return False, e, self.rename_plan
 
+    # Check Outcome of the Rename Files
     def check_result(self):
         if self.rename_count > 0:
             return "renamed", self.rename_count

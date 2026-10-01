@@ -15,12 +15,12 @@ class RenameDialog(ctk.CTkToplevel):
         self.transient(master)
         self.grab_set()
 
-        self.create_widget()
+        self.create_widgets()
 
-    def create_widget(self):
+    # Create Widgets
+    def create_widgets(self):
 
-        
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1) # Contain Card 
 
         self.card = ctk.CTkFrame(
             master        = self,
@@ -30,8 +30,7 @@ class RenameDialog(ctk.CTkToplevel):
             fg_color      = theme.panel)
         self.card.grid(row=0, column=0, padx=25, pady=25, sticky="news")
 
-        self.card.grid_columnconfigure(0, weight=1)
-
+        self.card.grid_columnconfigure(0, weight=1) # Contain Label and Buttons
 
         label = ctk.CTkLabel(
             master     = self.card,
@@ -66,9 +65,11 @@ class RenameDialog(ctk.CTkToplevel):
         
         confirm_button.pack(pady=15, side="left", anchor="center")
 
+    # Change the Comfirm's Value
     def confirmed_rename(self):
         self.confirm = True
         self.destroy()
 
+    # To Return Result
     def get_result(self):
         return self.confirm

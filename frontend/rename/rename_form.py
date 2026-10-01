@@ -12,13 +12,13 @@ class RenameForm(ctk.CTkFrame):
         self.on_preview_information = on_preview_information
 
         self.create_layout()
-        self.create_widget()
+        self.create_widgets()
 
+    # To Receive Rename Form's Value 
     def call_back(self):
         pattern = self.pattern_entry.get().strip()
         if not pattern:
             pattern = False
-
 
         start_number = self.start_number_entry.get().strip()
         if not start_number:
@@ -48,11 +48,15 @@ class RenameForm(ctk.CTkFrame):
         
         return pattern, extension, quality, start_number, number_foramt
 
+    # Create Layout
     def create_layout(self):
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1) # Contain Starting Number and Extension
+        self.grid_columnconfigure(1, weight=1) # Contain Number Format and Quality
 
-    def create_widget(self): 
+    # Create Widgets
+    def create_widgets(self): 
+
+        # Create Title 
 
         self.title = ctk.CTkLabel(
             master     = self, 
@@ -61,6 +65,8 @@ class RenameForm(ctk.CTkFrame):
             text_color = theme.text_primary)
 
         self.title.grid(row=0, column=0, columnspan=2, padx=25, pady=10, sticky="w")
+
+        # First Level Contains Pattern and Cancel Button
 
         self.pattern_label = ctk.CTkLabel(
             master     = self, 
@@ -100,6 +106,8 @@ class RenameForm(ctk.CTkFrame):
         
         self.cancel_button.grid(row=0, column=1, padx=(0,20), pady=5, sticky="ew")
 
+        # Second Level Contains Starting Number and Number Format
+        
         self.start_number_label = ctk.CTkLabel(
             master     = self, 
             text       = "Starting Number", 
@@ -149,6 +157,8 @@ class RenameForm(ctk.CTkFrame):
         self.number_format_menu.set("Number Format By")
         self.number_format_menu.grid(row=5, column=1, padx=20, sticky="ew")
 
+        # Third Level Contains Pattern and Cancel Button
+        
         self.extension_label = ctk.CTkLabel(
             master     = self, 
             text       = "Extension", 
@@ -157,15 +167,7 @@ class RenameForm(ctk.CTkFrame):
 
         self.extension_label.grid(row=6, column=0, padx=25, pady=5, sticky="w")
 
-        extension_option = [
-            ".mp3",
-            ".mp4",
-            ".mkv",
-            ".txt",
-            ".png",
-            ".jpg",
-            ".txt",
-            ".pdf"]
+        extension_option = [".mp3", ".mp4", ".mkv", ".txt", ".png", ".jpg", ".txt", ".pdf"]
         
         self.extension_menu = ctk.CTkOptionMenu(
             master               = self, 
@@ -194,11 +196,7 @@ class RenameForm(ctk.CTkFrame):
 
         self.quality_label.grid(row=6, column=1, padx=25, pady=5, sticky="w")
 
-        qualitied_option = [
-            "360p",
-            "480p",
-            "720p",
-            "1080p"]
+        qualitied_option = ["360p", "480p", "720p", "1080p"]
         
         self.quality_menu = ctk.CTkOptionMenu(
             master               = self, 
@@ -218,6 +216,8 @@ class RenameForm(ctk.CTkFrame):
         
         self.quality_menu.set("Quality By")
         self.quality_menu.grid(row=7, column=1, padx=20, sticky="ew")
+
+        # Fourth Level Contains Preview and Rename Button
 
         self.preview_button = ctk.CTkButton(
             master      = self,
@@ -241,6 +241,7 @@ class RenameForm(ctk.CTkFrame):
         
         self.rename_button.grid(row=8, column=1, padx=15, pady=(15,5), sticky="ew")
 
-    def clear_entries(self,):
+    # To Clear Pattern Entry
+    def clear_entries(self):
         self.pattern_entry.delete(0, "end")
         self.pattern_entry.focus()

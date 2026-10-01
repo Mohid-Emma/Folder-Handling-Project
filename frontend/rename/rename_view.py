@@ -16,9 +16,10 @@ class RenameView(ctk.CTkFrame):
         self.renamelist.grid(row=1, column=0, padx=25, pady=10, sticky="news")
 
     def create_layout(self):
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)    # Rename List 
+        self.grid_columnconfigure(0, weight=1) # Rename View Title
 
+    # Create Title
     def create_title(self):
         self.title_label = ctk.CTkLabel(
            master     = self, 
@@ -28,6 +29,7 @@ class RenameView(ctk.CTkFrame):
         
         self.title_label.grid(row=0, column=0, padx=25, pady=10, sticky="w")
 
+    # Sent Rename Plan to Rename List
     def display_card(self, rename_plan):
         self.renamelist.display_card(rename_plan)
 
@@ -39,9 +41,11 @@ class RenameList(ctk.CTkScrollableFrame):
         self.create_layout()
         self.display_card(None)
 
+    # Create Layout
     def create_layout(self):
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1) # Rename Files List
 
+    # Display Card
     def display_card(self, rename_plan):
         self.clear_preview()
         if rename_plan is None:
@@ -52,6 +56,7 @@ class RenameList(ctk.CTkScrollableFrame):
         for row, (old_name, new_name, status) in enumerate(rename_plan, start=2):
             RenameCard(self, old_name.name, new_name.name, status).grid(row=row, column=0, padx=5, pady=5, sticky="news")
 
+    # Create Title For Card
     def create_title(self):
         title_frame = ctk.CTkFrame(
             master        = self, 
@@ -77,11 +82,12 @@ class RenameList(ctk.CTkScrollableFrame):
         ).grid(row=0, column=1, padx=15, pady=15)
 
 
+    # Rename Old Preview 
     def clear_preview(self):
         for widget in self.winfo_children():
             widget.destroy()
 
-
+    # Create Empty Message
     def show_empty_message(self):
         empty_frame = ctk.CTkFrame(
             master   = self, 

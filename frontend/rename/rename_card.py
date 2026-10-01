@@ -14,19 +14,20 @@ class RenameCard(ctk.CTkFrame):
         self.create_layout()
         self.create_label()
 
+    # Create Layout
     def create_layout(self):
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
-        
+        self.grid_columnconfigure(0, weight=1) # Original Name
+        self.grid_columnconfigure(1, weight=1) # New Name
+
+    # Create Label for Original and New Name
     def create_label(self):
 
-        old_label = ctk.CTkLabel(
+        original_label = ctk.CTkLabel(
             master     = self, 
             text       = self.old_name,
             font       = ("Segoe UI", 12, "bold"),
             text_color = theme.text_primary)
-        old_label.grid(row=1, column=0, padx=15, pady=15, sticky="ew")
-
+        original_label.grid(row=1, column=0, padx=15, pady=15, sticky="ew")
 
         color = self.create_status()        
         
@@ -37,6 +38,7 @@ class RenameCard(ctk.CTkFrame):
             text_color = color)
         new_label.grid(row=1, column=1, padx=15, pady=15, sticky="ew") 
 
+    # Determine Text's Color 
     def create_status(self):
         if self.status == "Ready":
             return theme.action_hover
