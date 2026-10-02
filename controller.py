@@ -30,10 +30,10 @@ class App:
         if self.rename:
             success, error, rename_plan = self.rename.rename_files()
             if success:
-                status, data = self.rename.check_result()
-                self.main_window.show_status(status, data)
+                file, status, data, extension = self.rename.check_result()
+                self.main_window.show_status(file, status, data, extension)
             else:
-                self.main_window.show_status("error", error)
+                self.main_window.show_status(file, "error", error)
         return rename_plan
 
     # Sent Data To Window For Show Results

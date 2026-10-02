@@ -5,10 +5,11 @@ from pathlib import Path
 
 class Rename:
     def __init__(self, folder, extension, pattern, quality, start_number, number_foramt):
-        self.folder         = Path(folder)
-        self.rename_plan    = []
-        self.rename_count   = 0
-        self.folder_count   = 0
+        self.folder       = Path(folder)
+        self.rename_plan  = []
+        self.rename_count = 0
+        self.file_count   = 0
+        self.status       = None
         
         self.extension     = extension
         self.pattern       = pattern
@@ -19,11 +20,11 @@ class Rename:
     # Create Rename Plan
     def create_rename_folder(self): 
         self.rename_plan  = []
-        self.folder_count = 0
+        self.file_count = 0
 
         for i, item in enumerate(self.folder.glob(f"*{self.extension}"), start=int(self.start_number)):
 
-            self.folder_count += 1
+            self.file_count += 1
             if self.pattern:
                 new_base_name = self.pattern.format(i=i)
                 new_name = self.folder / f"{new_base_name}{self.extension}"
@@ -52,14 +53,17 @@ class Rename:
                     rename_item[2] = "Finished"
                     self.rename_count += 1
             return True, None, self.rename_plan
+        
         except OSError as e:
             return False, e, self.rename_plan
 
     # Check Outcome of the Rename Files
     def check_result(self):
         if self.rename_count > 0:
-            return "renamed", self.rename_count
-        elif self.folder_count == 0:
-            return "empty", None
+            status = "renamed"
+        elif self.file_count == 0:
+            status = "empty"
         else:
-            return "skipped", None
+            status = "skipped"
+
+        return self.file_count, status, self.rename_count, self.extension

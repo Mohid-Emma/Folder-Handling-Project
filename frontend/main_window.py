@@ -148,14 +148,15 @@ class MainWindow(ctk.CTk):
         button.grid(row=row, column=0, padx=15, pady=(15,5), sticky="ew")
         return button
 
+    # Create Main Content
     def create_main_content(self):
         
         self.main_frame.grid_rowconfigure(0, weight=0) # Title
         self.main_frame.grid_rowconfigure(1, weight=0) # Select Folder/File
         self.main_frame.grid_rowconfigure(2, weight=2) # Setting / Preview
         
-        self.main_frame.grid_columnconfigure(0, weight=1) # Setting
-        self.main_frame.grid_columnconfigure(1, weight=2) # Preview
+        self.main_frame.grid_columnconfigure(0, weight=0) # Rename Form
+        self.main_frame.grid_columnconfigure(1, weight=2) # Rename View 
 
         # Create Title For Main Contain
 
@@ -204,11 +205,25 @@ class MainWindow(ctk.CTk):
 
     # Create Footer
     def create_footer(self):
-        self.status_label = ctk.CTkLabel(
-            master = self.footer_frame,
-            text   = "● Ready",
-            font   = ("Segoe UI", 14, "bold"))
-        self.status_label.pack(pady=10)
+
+        self.footer_frame.grid_rowconfigure(0, weight=1)
+
+        self.status_label   = self.create_status_label("● Ready", (20,150))
+        self.status_total   = self.create_status_label("Total : 0")
+        self.status_renamed = self.create_status_label("Renamed : 0")
+        self.status_skipped = self.create_status_label("Skipped : 0")
+        self.status_failed  = self.create_status_label("Failed : 0")
+
+    def create_status_label(self, text, padx = (20,180)):
+
+        status_label = ctk.CTkLabel(
+            master     = self.footer_frame,
+            text       = text,
+            font       = ("Segoe UI", 14, "bold"),
+            text_color = theme.text_primary)
+        
+        status_label.pack(padx=padx, pady=10, side="left", expand=True)
+        return status_label
 
 
     # Create Preview For Rename Files
@@ -245,31 +260,32 @@ class MainWindow(ctk.CTk):
         self.rename_view.display_card(rename_plan)
 
     # Show Status of the Final Result
-    def show_status(self, status, data):
+    def show_status(self, file,  status, data, extension):
+
+        extension = extension.replace(".", "").capitalize()
+
         if status == "renamed":
             self.status_label.configure(
-                text       = f"● {data} files renamed successfully",
+                text       = f"● Success",
                 text_color = theme.success)
             
         elif status == "empty":
             self.status_label.configure(
-                text       = "● No MP4 files found",
+                text       = f"● No {extension} Files Found",
                 text_color = theme.error)
             
         elif status == "skipped":
             self.status_label.configure(
-                text       = "● No files renamed",
+                text       = "● No Files Renamed",
                 text_color = theme.error)
         elif status == "error":
             self.status_label.configure(
                 text       = f"{data}",
                 text_color = theme.error)
-            
-
-
-
-                
-
-
-
-
+            self.status_failed.configure(f"Failed : {file-data}")
+        else:
+            return
+        
+        self.status_total.configure(text = f"Total : {file}")
+        self.status_renamed.configure(text = f"Renamed : {data}")
+        self.status_skipped.configure(text = f"Skipped : {file-data}")
