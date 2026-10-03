@@ -2,7 +2,7 @@
 
 import customtkinter        as     ctk
 import config.theme         as     theme
-from   frontend.rename.rename_card import RenameCard
+from   frontend.wigets.card import RenameCard
 
 
 class RenameView(ctk.CTkFrame):

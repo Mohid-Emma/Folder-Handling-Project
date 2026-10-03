@@ -1,26 +1,31 @@
-# theme.py
+#  config/theme.py
 
+# Backgrounds
+background           = "#06172D"
+sidebar              = "#081B34"
+panel                = "#0F294C"
+panel_light          = "#142F52"
 
-background           = "#0F172A"
-sidebar              = "#111827" 
+# Borders
+border               = "#204B65"
 
-panel                = "#1E293B"
-panel_light          = "#273449"
-border               = "#334155"
+# Actions
+action               = "#0569EA"
+action_hover         = "#1B88F7"
+action_disable       = "#0F4B9C"
+action_disable_hover = "#204B65"
 
-text_primary         = "#F8FAFC"
-text_secondary       = "#94A3B8"
+# Text
+text_primary         = "#E7F0F8"
+text_secondary       = "#A9D0F2"
+text_muted           = "#91B0DA"
 
-action               = "#3B82F6"
-action_hover         = "#2563EB"
-action_disable       = "#7F859F"
-action_disable_hover = "#787D94"
+# Status
+success              = "#24D28E"
+error                = "#F76099"
+warning              = "#F8A354"
+info                 = "#6CA2E6"
 
+# Transparent    
+transparent          = "transparent"
 
-success              = "#22C55E"
-success_hover        = "#1EAD53"
-warning              = "#F59E0B"
-error                = "#EF4444"
-error_hover          = "#D43A3A"
-
-transparent          =   "transparent"
