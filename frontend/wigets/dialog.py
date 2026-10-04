@@ -4,7 +4,7 @@ import customtkinter as     ctk
 from   config        import theme
 
 
-class RenameDialog(ctk.CTkToplevel):
+class Dialog(ctk.CTkToplevel):
     def __init__(self, master):
         super().__init__(master, fg_color=theme.background)
 

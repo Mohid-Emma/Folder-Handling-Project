@@ -3,7 +3,7 @@
 import customtkinter as ctk
 import config.theme  as theme
 
-class RenameCard(ctk.CTkFrame):
+class Card(ctk.CTkFrame):
     def __init__(self, master, old_name, new_name, status):
         super().__init__(master, fg_color=theme.transparent)
 

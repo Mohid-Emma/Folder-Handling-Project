@@ -2,17 +2,17 @@
 
 import customtkinter        as     ctk
 import config.theme         as     theme
-from   frontend.wigets.card import RenameCard
+from   frontend.wigets.card import Card
 
 
-class RenameView(ctk.CTkFrame):
+class View(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=theme.panel_light)
 
         self.create_layout()
         self.create_title()
 
-        self.renamelist = RenameList(self)
+        self.renamelist = List(self)
         self.renamelist.grid(row=1, column=0, padx=25, pady=10, sticky="news")
 
     def create_layout(self):
@@ -34,7 +34,7 @@ class RenameView(ctk.CTkFrame):
         self.renamelist.display_card(rename_plan)
 
 
-class RenameList(ctk.CTkScrollableFrame):
+class List(ctk.CTkScrollableFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=theme.background)
 

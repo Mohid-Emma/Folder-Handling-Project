@@ -4,7 +4,7 @@ import customtkinter as     ctk
 from   config        import theme
 from   tkinter       import messagebox
 
-class RenameForm(ctk.CTkFrame):
+class Form(ctk.CTkFrame):
     def __init__(self, master, on_preview_information, on_rename):
         super().__init__(master, fg_color= theme.panel_light)
 
