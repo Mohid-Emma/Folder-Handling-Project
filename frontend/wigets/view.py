@@ -1,115 +1,91 @@
-# rename_view.py 
-
-import customtkinter        as     ctk
-import config.theme         as     theme
-from   frontend.wigets.card import Card
+import customtkinter as ctk
+import config.theme as theme
 
 
 class View(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master, fg_color=theme.panel_light)
-
-        self.create_layout()
-        self.create_title()
-
-        self.renamelist = List(self)
-        self.renamelist.grid(row=1, column=0, padx=25, pady=10, sticky="news")
-
-    def create_layout(self):
-        self.grid_rowconfigure(1, weight=1)    # Rename List 
-        self.grid_columnconfigure(0, weight=1) # Rename View Title
-
-    # Create Title
-    def create_title(self):
-        self.title_label = ctk.CTkLabel(
-           master     = self, 
-           text       = "💾 Rename Preview", 
-           font       = ("Segoe UI", 18, "bold"),
-           text_color = theme.text_primary)
+    """Scrollable preview table for the generated rename plan."""
+    def __init__(self, master, **kwargs):
+        super().__init__(master, fg_color=theme.panel, corner_radius=10, border_width=1, border_color=theme.border, **kwargs)
         
-        self.title_label.grid(row=0, column=0, padx=25, pady=10, sticky="w")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        
+        top = ctk.CTkFrame(
+            master   = self, 
+            fg_color = "transparent")
+        top.grid(row=0, column=0, padx=16, pady=(14, 10), sticky="ew")
+        top.grid_columnconfigure(0, weight=1)
+        
+        ctk.CTkLabel(
+            master     = top, 
+            text       = "PREVIEW", 
+            anchor     = "w", 
+            font       = ("Roboto", 13, "bold"),
+            text_color = theme.text_secondary
+            ).grid(row=0, column=0, sticky="w")
+        self.count_label = ctk.CTkLabel(
+            master        = top, 
+            text          = "0 files", 
+            corner_radius = 12,
+            fg_color      = theme.panel_light, 
+            text_color    = theme.text_secondary)
+        self.count_label.grid(row=0, column=1, sticky="e")
+        
+        self.table = ctk.CTkScrollableFrame(
+            master        = self, 
+            fg_color      = theme.background,
+            corner_radius = 8, 
+            border_width  = 1, 
+            border_color  = theme.border)
+        self.table.grid(row=1, column=0, padx=16, pady=(0, 16), sticky="nsew")
+        self.table.grid_columnconfigure((0, 1), weight=3)
+        self.table.grid_columnconfigure(2, weight=1)
+        
+        self._draw_header()
 
-    # Sent Rename Plan to Rename List
-    def display_card(self, rename_plan):
-        self.renamelist.display_card(rename_plan)
+    def _draw_header(self):
+        for col, text in enumerate(("Original Name", "New Name", "Status")):
+            ctk.CTkLabel(
+                master          = self.table, 
+                text            = text, 
+                anchor          = "w", 
+                font            = ("Roboto", 12, "bold"),
+                text_color      = theme.text_secondary, 
+                fg_color        = theme.panel_light,
+                corner_radius   = 4
+                ).grid(row=0, column=col, padx=2, pady=2, sticky="ew")
 
+    def clear_preview(self):
+        for child in self.table.winfo_children():
+            child.destroy()
+        self._draw_header()
 
-class List(ctk.CTkScrollableFrame):
-    def __init__(self, master):
-        super().__init__(master, fg_color=theme.background)
-
-        self.create_layout()
-        self.display_card(None)
-
-    # Create Layout
-    def create_layout(self):
-        self.grid_columnconfigure(0, weight=1) # Rename Files List
-
-    # Display Card
     def display_card(self, rename_plan):
         self.clear_preview()
-        if rename_plan is None:
-            self.show_empty_message()
-            return
-        self.create_title()
-
-        for row, (old_name, new_name, status) in enumerate(rename_plan, start=2):
-            RenameCard(self, old_name.name, new_name.name, status).grid(row=row, column=0, padx=5, pady=5, sticky="news")
-
-    # Create Title For Card
-    def create_title(self):
-        title_frame = ctk.CTkFrame(
-            master        = self, 
-            corner_radius = 0,
-            fg_color      = theme.transparent)
-        title_frame.grid(row=1, column=0, sticky="news")
-
-        title_frame.grid_columnconfigure(0, weight=1)
-        title_frame.grid_columnconfigure(1, weight=1)
-
-        ctk.CTkLabel(
-            master    = title_frame, 
-            text      = "Original Name",
-            font      = ("Segoe UI", 18, "bold"),
-           text_color = theme.text_primary
-        ).grid(row=0, column=0, padx=15, pady=15)
-
-        ctk.CTkLabel(
-            master    = title_frame, 
-            text      = "New Name",
-            font      = ("Segoe UI", 18, "bold"),
-           text_color = theme.text_primary
-        ).grid(row=0, column=1, padx=15, pady=15)
-
-
-    # Rename Old Preview 
-    def clear_preview(self):
-        for widget in self.winfo_children():
-            widget.destroy()
-
-    # Create Empty Message
-    def show_empty_message(self):
-        empty_frame = ctk.CTkFrame(
-            master   = self, 
-            fg_color = theme.transparent)
-        empty_frame.grid(row=1, column=0, padx=20, pady=60, sticky="news")
-
-        ctk.CTkLabel( 
-            master = empty_frame, 
-            text   = "📁", 
-            font   = ("Segoe UI Emoji", 40)
-            ).pack(pady=(0, 10))
-
-        ctk.CTkLabel(
-            master     = empty_frame, 
-            text       = "No File Available.",
-            font       = ("Segoe UI", 20, "bold"),
-            text_color = theme.text_primary
-            ).pack(pady=5)
-
-        ctk.CTkLabel(
-            master     = empty_frame, 
-            text       = "Try Changing Your Search.",
-            font       = ("Segoe UI", 11),
-            text_color = theme.text_secondary
-            ).pack(pady=5) 
+        self.count_label.configure(text=f"{len(rename_plan)} files")
+        styles = {
+            "Ready"   : ("Ready",   theme.success), 
+            "Finished": ("Renamed", theme.success),
+            "Exist"   : ("Exists",  theme.warning), 
+            "Error"   : ("Error",   theme.error),
+            "Skipped" : ("Skipped", theme.warning)}
+        
+        for row, item in enumerate(rename_plan, start=1):
+            old_path, new_path, status = item["old_name"], item["new_name"], item["status"]
+            old_name = getattr(old_path, "name", str(old_path))
+            new_name = getattr(new_path, "name", str(new_path))
+            status_text, status_color = styles.get(status, (str(status), theme.text_secondary))
+            bg = theme.panel if row % 2 == 0 else theme.background
+            
+            for col, value, color in ((0, old_name, theme.text_primary),
+                                      (1, str(new_name), theme.text_primary),
+                                      (2, status_text, status_color)):
+                ctk.CTkLabel(
+                    master     = self.table, 
+                    text       = value, 
+                    anchor     = "w" if col < 2 else "center",
+                    text_color = color, 
+                    fg_color   = bg, 
+                    padx       = 8, 
+                    pady       = 12
+                    ).grid(row=row, column=col, padx=2, pady=1, sticky="ew")

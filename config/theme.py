@@ -2,6 +2,7 @@
 
 # Backgrounds
 background           = "#06172D"
+header               = "#071D34"
 sidebar              = "#081B34"
 panel                = "#0F294C"
 panel_light          = "#142F52"
@@ -29,3 +30,5 @@ info                 = "#6CA2E6"
 # Transparent    
 transparent          = "transparent"
 
+# Font
+font                 = "Segoe UI"

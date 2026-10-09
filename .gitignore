@@ -7,4 +7,4 @@ database/library.db
 build/
 dist/
 *.spec
-
+perfect_gui_ui.py
