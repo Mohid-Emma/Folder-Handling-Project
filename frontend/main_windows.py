@@ -190,11 +190,11 @@ class MainWindow(ctk.CTk):
         self.current_mode = current_mode
 
         modes = {
-            "rename": self.rename_btn,
+            "rename"  : self.rename_btn,
             "organize": self.organize_btn,
-            "move": self.move_btn,
-            "copy": self.copy_btn,
-            "search": self.search_btn,
+            "move"    : self.move_btn,
+            "copy"    : self.copy_btn,
+            "search"  : self.search_btn,
         }
 
         for mode, button in modes.items():
@@ -210,6 +210,9 @@ class MainWindow(ctk.CTk):
                 )
 
         self.m_title.change_title(current_mode)
+        self.form.change_form(current_mode)
+        self.view.change_view(current_mode)
+        self.status.change_status(current_mode)
 
     def create_button(self, parent, icon_name, text, command, row, active=False):
         fg_color = theme.action if active else theme.transparent
@@ -218,17 +221,17 @@ class MainWindow(ctk.CTk):
         ctk_icon = icon_image_convert(icon_name, theme.action_hover, 30)
 
         button = ctk.CTkButton(
-            parent,
-            text=text,
-            image=ctk_icon,
-            font=("Roboto", 16),
-            anchor="w",
-            height=58,
-            corner_radius=8,
-            command=command,
-            fg_color=fg_color,
-            text_color=theme.text_primary,
-            hover_color=hover_color,
+            master        = parent,
+            text          = text,
+            image         = ctk_icon,
+            font          = ("Roboto", 16),
+            anchor        = "w",
+            height        = 58,
+            corner_radius = 8,
+            command       = command,
+            fg_color      = fg_color,
+            text_color    = theme.text_primary,
+            hover_color   = hover_color,
         )
         button.grid(row=row, column=0, padx=12, pady=4, sticky="ew")
         return button
@@ -281,11 +284,11 @@ class MainWindow(ctk.CTk):
         self.footer_frame.grid_columnconfigure(0, weight=1)
         self.footer_frame.grid_columnconfigure(1, weight=0)
 
-        self.status_label = self.create_status_label("● Ready", "left")
-        self.status_total = self.create_status_label("Total : 0", "right")
+        self.status_label   = self.create_status_label("● Ready", "left")
+        self.status_total   = self.create_status_label("Total : 0", "right")
         self.status_renamed = self.create_status_label("Renamed : 0", "right")
         self.status_skipped = self.create_status_label("Skipped : 0", "right")
-        self.status_failed = self.create_status_label("Failed : 0", "right")
+        self.status_failed  = self.create_status_label("Failed : 0", "right")
 
     def create_status_label(self, text, side="left"):
         label = ctk.CTkLabel(

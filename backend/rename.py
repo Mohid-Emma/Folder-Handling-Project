@@ -157,10 +157,10 @@ class Rename:
         )
 
         return {
-            "total": self.file_count,
-            "renamed": self.rename_count,
-            "skipped": skipped,
-            "failed": failed,
+            "total"    : self.file_count,
+            "renamed"  : self.rename_count,
+            "skipped"  : skipped,
+            "failed"   : failed,
             "extension": self.extension,
         }
         
