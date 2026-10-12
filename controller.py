@@ -22,9 +22,9 @@ class App:
         self.current_plan = []
 
         self.main_window = MainWindow(
-            on_folder   = self.set_folder,
-            on_preview  = self.set_preview,
-            on_rename   = self.execute_rename,
+            on_rename_folder  = self.set_rename,
+            on_rename_preview = self.rename_preview,
+            on_rename_execute = self.execute_rename,
             on_organize = None,
             on_copy     = None,
             on_move     = None,
@@ -36,21 +36,11 @@ class App:
     # RENAME: callbacks used by the existing MainWindow
     # --------------------------------------------------
 
-    def set_folder(
-        self, folder, extension, pattern, quality,
-        start_number, number_format
-    ):
-        self.rename = Rename(
-            folder,
-            extension,
-            pattern,
-            quality,
-            start_number,
-            number_format,
-        )
+    def set_rename(self, rename_data):
+        self.rename = Rename(rename_data)
         self.current_operation = "rename"
 
-    def set_preview(self):
+    def rename_preview(self):
         if self.rename is None:
             return self._notice("Choose a folder and configure rename settings.")
 
@@ -70,7 +60,7 @@ class App:
             return self._notice("Create a rename preview first.")
 
         if not self.rename.rename_plan:
-            self.set_preview()
+            self.rename_preview()
 
         plan = self.rename.rename_plan
         ready = sum(x["status"] == "Ready" for x in plan)
@@ -295,8 +285,14 @@ class App:
                 x.get("status") == "Error" for x in plan
             ),
         }
-
+    
     def _update_summary(self, summary):
+        status = self.main_window.status
+    
+        if hasattr(status, "update_from_result"):
+            status.update_from_result(summary)
+    
+        # Keep the existing footer in sync during the transition.
         labels = {
             "status_total": f"Total: {summary.get('total', 0)}",
             "status_renamed": (
@@ -305,7 +301,7 @@ class App:
             "status_skipped": f"Skipped: {summary.get('skipped', 0)}",
             "status_failed": f"Failed: {summary.get('failed', 0)}",
         }
-
+    
         for attribute, text in labels.items():
             widget = getattr(self.main_window, attribute, None)
             if widget is not None:

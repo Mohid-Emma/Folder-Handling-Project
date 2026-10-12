@@ -12,12 +12,12 @@ from frontend.wigets.title  import Title
 
 
 class MainWindow(ctk.CTk):
-    def __init__(self, on_folder, on_preview, on_rename, on_organize, on_copy, on_move, on_search, on_result):
+    def __init__(self, on_rename_folder, on_rename_preview, on_rename_execute, on_organize, on_copy, on_move, on_search, on_result):
         super().__init__(fg_color=theme.background)
 
-        self.on_folder    = on_folder
-        self.on_preview   = on_preview
-        self.on_rename    = on_rename
+        self.on_rename_folder  = on_rename_folder
+        self.on_rename_preview = on_rename_preview
+        self.on_rename_execute = on_rename_execute
         self.on_organize  = on_organize
         self.on_copy      = on_copy    
         self.on_move      = on_move    
@@ -254,9 +254,9 @@ class MainWindow(ctk.CTk):
 
         # Form/settings panel
         self.form = Form(
-            master      = self.main_frame,
-            on_preview  = self.preview_rename,
-            on_rename   = self.confirmed_rename,
+            master              = self.main_frame,
+            on_rename_preview   = self.preview_rename,
+            on_rename_execute   = self.confirmed_rename,
             on_organize = None,
             on_copy     = None,
             on_move     = None,
@@ -310,39 +310,25 @@ class MainWindow(ctk.CTk):
     # =============================================================
 
     def preview_rename(self):
-        file_path = self.source_file.get_folder_path()
-        form_data = self.form.call_back()
+        rename_data = self.form.call_back_rename()
 
-        if form_data is None:
+        if rename_data is None:
             return
 
-        if file_path is None:
-            return
-
-        pattern, extension, quality, start_number, number_format = form_data
-
-        self.on_folder(
-            file_path,
-            extension,
-            pattern,
-            quality,
-            start_number,
-            number_format,
-        )
-        self.on_preview()
+        self.on_rename_folder(rename_data)
+        self.on_rename_preview()
 
     def confirmed_rename(self):
-        file_path = self.source_file.get_folder_path()
-        form_data = self.form.call_back()
+        rename_data = self.form.call_back_rename()
 
-        if form_data is None or file_path is None:
+        if rename_data is None:
             return
 
         dialog = Dialog(self)
         self.wait_window(dialog)
 
         if dialog.get_result():
-            rename_plan = self.on_rename()
+            rename_plan = self.on_rename_execute()
             if not rename_plan:
                 return
 

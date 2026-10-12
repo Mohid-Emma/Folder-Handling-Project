@@ -16,11 +16,11 @@ class _SourceFolder:
 class Form(ctk.CTkFrame):
 
 
-    def __init__(self, master, on_preview, on_rename, on_organize, on_copy, on_move, on_search, **kwargs):
+    def __init__(self, master, on_rename_preview, on_rename_execute, on_organize, on_copy, on_move, on_search, **kwargs):
         super().__init__(master, fg_color=theme.panel, corner_radius=10, border_width=1, border_color=theme.border, **kwargs)
         
-        self.on_preview = on_preview
-        self.on_rename = on_rename
+        self.on_rename_preview = on_rename_preview
+        self.on_rename_execute = on_rename_execute
         
         self.pattern_var        = ctk.StringVar(value="Episode")
         self.start_var          = ctk.StringVar(value="1")
@@ -200,7 +200,7 @@ class Form(ctk.CTkFrame):
 
         self.option("rename",9)
 
-        self.button("Rename", None, 12)
+        self.button("Rename", self._rename, 12)
 
     def _build_organize(self):
         self._section("ORGANIZE BY", 2)
@@ -383,7 +383,10 @@ class Form(ctk.CTkFrame):
             self.source_entry.delete(0, "end")
             self.source_entry.insert(0, folder)
 
-    def call_back(self):
+    def call_back_rename(self):
+        folder = self.source_file.get_folder_path()
+        if folder is None:
+            return
         pattern = self.pattern_var.get().strip()
         try:
             start_number = int(self.start_var.get().strip())
@@ -392,8 +395,15 @@ class Form(ctk.CTkFrame):
         except ValueError:
             messagebox.showerror("Invalid settings", "Start Number must be a non-negative integer.", parent=self)
             return None
-        return (pattern, self.extension_var.get(), self.quality_var.get(),
-                start_number, self.number_format_var.get())
+        rename_data = {
+                    "folder"        : folder,
+                    "extension"     : self.extension_var.get(),
+                    "pattern"       : pattern,
+                    "quality"       : self.quality_var.get(),
+                    "start_number"  : start_number,
+                    "number_format" : self.number_format_var.get()
+                }
+        return rename_data
 
     def change_form(self, mode):
         self._destroy_widgets()
@@ -405,15 +415,8 @@ class Form(ctk.CTkFrame):
             widget.destroy()
 
     def _preview(self):
-        self.on_preview()
+        self.on_rename_preview()
 
     def _rename(self):
-        self.on_rename()
+        self.on_rename_execute()
 
-    def organize_test(self):
-
-        self.section_label(opts,"File Type"); ctk.CTkComboBox(opts,values=["All Files","Video","Image","Audio","Document","Archive","Other"],height=46,fg_color="#06203A",border_color="#16649B").pack(fill="x",padx=18)
-
-        self.section_label(opts,"Additional Options"); self.checkbox(opts,"Include subfolders"); self.checkbox(opts,"Case sensitive"); self.checkbox(opts,"Search file contents (slower)"); button(opts,"⌕  Search",lambda: app.footer_status.configure(text="Search complete"),200,True).pack(fill="x",padx=18,pady=20)
-
-        pass

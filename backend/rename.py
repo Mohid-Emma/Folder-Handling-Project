@@ -4,21 +4,13 @@ from pathlib import Path
 
 
 class Rename:
-    def __init__(
-        self,
-        folder,
-        extension=".mp4",
-        pattern=None,
-        quality="1080p",
-        start_number=1,
-        number_format=2,
-    ):
-        self.folder        = Path(folder).expanduser()
-        self.extension     = extension
-        self.pattern       = pattern
-        self.quality       = quality
-        self.start_number  = int(start_number)
-        self.number_format = number_format
+    def __init__(self,rename_data):
+        self.folder        = Path(rename_data["folder"]).expanduser()
+        self.extension     = rename_data["extension"]
+        self.pattern       = rename_data["pattern"]
+        self.quality       = rename_data["quality"]
+        self.start_number  = int(rename_data["start_number"])
+        self.number_format = rename_data["number_format"]
 
         self.rename_plan  = []
         self.file_count   = 0
