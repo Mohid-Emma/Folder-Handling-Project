@@ -16,17 +16,27 @@ class _SourceFolder:
 class Form(ctk.CTkFrame):
 
 
-    def __init__(self, master, on_rename_preview, on_rename_execute, on_organize, on_copy, on_move, on_search, **kwargs):
+    def __init__(self, master, 
+                on_rename_preview, on_rename_execute, 
+                on_organize_preview, on_organize_execute, on_copy, on_move, on_search, **kwargs):
         super().__init__(master, fg_color=theme.panel, corner_radius=10, border_width=1, border_color=theme.border, **kwargs)
         
         self.on_rename_preview = on_rename_preview
         self.on_rename_execute = on_rename_execute
-        
+
+        self.on_organize_preview = on_organize_preview
+        self.on_organize_execute = on_organize_execute
+
         self.pattern_var        = ctk.StringVar(value="Episode")
         self.start_var          = ctk.StringVar(value="1")
         self.number_format_var  = ctk.StringVar(value="01 (Two Digits)")
         self.extension_var      = ctk.StringVar(value=".mp4")
         self.quality_var        = ctk.StringVar(value="1080p")
+
+        self.organize_by        = ctk.StringVar(value="File Type")
+        self.org_destination    = ctk.StringVar(value="Same Folder")
+        self.recursive          = ctk.StringVar(value=False)
+        
          
         self.skip_same_var      = ctk.BooleanVar(value=True)
         self.video_only_var     = ctk.BooleanVar(value=True)
@@ -52,10 +62,7 @@ class Form(ctk.CTkFrame):
         "copy"    : (("Copy files (not move)", self.copy_not_move), ("Include subfolders" , self.include_subf), ("Keep original file structure", self.keep_ori_file_str)),
         "search"  : (("Include subfolders", self.include_files_subf), ("Case sensitive" , self.case_sensitive), ("Search file contents (slower)", self.sear_file_contents))
  }
-
-
-        self._build_1()
-        self._build_2("rename")
+        self.change_form("rename")
 
 
 
@@ -69,40 +76,11 @@ class Form(ctk.CTkFrame):
             ).grid( row=row, column=0, columnspan=2, padx=18,
                     pady=(18, 8), sticky="ew")
 
-    def _build_1(self):
+    def _build(self, current_mode):
+
         self.grid_columnconfigure((0, 1), weight=1)
-        self._section("Source Folder", 0)
+        self.source_file = self._browse_form("Source Folder", 0) 
 
-        folder_row = ctk.CTkFrame(
-            master   = self, 
-            fg_color = "transparent")
-        folder_row.grid(row=1, column=0, columnspan=2, padx=18, sticky="ew")
-        folder_row.grid_columnconfigure(0, weight=1)
-        
-        self.source_entry = ctk.CTkEntry(
-            master           = folder_row, 
-            height           = 42, 
-            placeholder_text = "Select a folder...",
-            fg_color         = theme.background, 
-            border_color     = theme.border)
-        self.source_entry.grid(row=0, column=0, padx=(0, 8), sticky="ew")
-        
-        self.source_file = _SourceFolder(self.source_entry)
-
-        browse_icon = icon_image_convert(icon.browse, theme.text_primary, 25)
-        ctk.CTkButton(
-            master      = folder_row, 
-            text        = "Browse", 
-            width       = 95, 
-            height      = 42,
-            image       = browse_icon,
-            text_color  = theme.text_primary,
-            fg_color    = theme.action, 
-            hover_color = theme.action_hover,          
-            command     = self._browse).grid(row=0, column=1)
-
-
-    def _build_2(self, current_mode):
         modes = {
             "rename"  : self._build_rename,
             "organize": self._build_organize,
@@ -200,19 +178,22 @@ class Form(ctk.CTkFrame):
 
         self.option("rename",9)
 
-        self.button("Rename", self._rename, 12)
+        self.button("Rename", self.on_rename_preview, self.on_rename_execute, 12)
 
     def _build_organize(self):
-        self._section("ORGANIZE BY", 2)
+
+        self.org_destination = self._browse_form("DESTINATION", 2)
+        self._section("ORGANIZE BY", 4)
         ctk.CTkOptionMenu(
             master             = self, 
             values             = ["File Type","File Extension","Date Modified"], 
             height             = 46, 
+            variable           = self.organize_by,
             fg_color           = theme.panel_light, 
             button_color       = theme.action,
             button_hover_color = theme.action_hover
             ).grid(
-            row=3, column=0, padx=18, columnspan=2, sticky="ew")
+            row=5, column=0, padx=18, columnspan=2, sticky="ew")
 
         info_icon = icon_image_convert(icon.info, theme.text_primary, 15)
         ctk.CTkLabel(
@@ -223,22 +204,10 @@ class Form(ctk.CTkFrame):
             anchor     = "w", 
             text_color = theme.text_primary
             ).grid(
-            row=4, column=0, padx=(18, 6), pady=(0, 5), columnspan=2, sticky="ew")
-
-        self._section("DESTINATION", 5)
-        ctk.CTkOptionMenu(
-            master             = self, 
-            values             = ["Same Folder","New Folder"], 
-            height             = 46, 
-            fg_color           = theme.panel_light, 
-            button_color       = theme.action,
-            button_hover_color = theme.action_hover
-            ).grid(
-            row=6, column=0, padx=18, columnspan=2, sticky="ew")
+            row=6, column=0, padx=(18, 6), pady=(0, 5), columnspan=2, sticky="ew")
 
         self.option("organize", 7)
-            
-        self.button("Organize", None, 10)
+        self.button("Organize", self.on_organize_preview, self.on_organize_execute, 10)
             
     def _build_move(self):
         self._section("DESTINATION FOLDER", 2)
@@ -257,7 +226,7 @@ class Form(ctk.CTkFrame):
             border_color     = theme.border)
         self.destination_entry.grid(row=0, column=0, padx=(0, 8), sticky="ew")
         
-        self.destination_file = _SourceFolder(self.destination_entry)
+        self.destination = _SourceFolder(self.destination_entry)
 
         browse_icon = icon_image_convert(icon.browse, theme.text_primary, 25)
         ctk.CTkButton(
@@ -273,7 +242,7 @@ class Form(ctk.CTkFrame):
 
         self.option("move",4)
         
-        self.button("Move", None, 8)
+        self.button("Move", None, None, 8)
 
     def _build_copy(self):
         self._section("DESTINATION FOLDER", 2)
@@ -292,7 +261,7 @@ class Form(ctk.CTkFrame):
             border_color     = theme.border)
         self.destination_entry.grid(row=0, column=0, padx=(0, 8), sticky="ew")
         
-        self.destination_file = _SourceFolder(self.destination_entry)
+        self.destination = _SourceFolder(self.destination_entry)
 
         browse_icon = icon_image_convert(icon.browse, theme.text_primary, 25)
         ctk.CTkButton(
@@ -308,7 +277,7 @@ class Form(ctk.CTkFrame):
 
         self.option("copy",4)
         
-        self.button("Copy", None, 8)
+        self.button("Copy", None, None, 8)
 
     def _build_search(self):
         self._section("SEARCH BY", 2)
@@ -324,7 +293,7 @@ class Form(ctk.CTkFrame):
 
         self.option("search", 4)
             
-        self.button("Search", None, 8)
+        self.button("Search", None, None, 8)
 
     def option(self, mode, row):
 
@@ -341,11 +310,8 @@ class Form(ctk.CTkFrame):
                 border_color = theme.border
                 ).grid(
                     row=row, column=0, columnspan=2, padx=20, pady=7, sticky="w")
-            
 
-
-
-    def button(self, text, command, row):
+    def button(self, text, command_preview, command_execute, row):
         buttons = ctk.CTkFrame(
             master   = self, 
             fg_color = "transparent")
@@ -363,7 +329,7 @@ class Form(ctk.CTkFrame):
             border_color = theme.action,
             hover_color  = theme.action_disable_hover, 
             text_color   = theme.text_secondary,
-            command      = self._preview
+            command      = command_preview
             ).grid(row=0, column=0, padx=(0, 6), sticky="ew")
 
         execute_icon = icon_image_convert(icon.execute_fill, theme.text_secondary, 25)
@@ -374,14 +340,14 @@ class Form(ctk.CTkFrame):
             image        = execute_icon,
             fg_color     = theme.action, 
             hover_color  = theme.action_hover,
-            command      = command
+            command      = command_execute
             ).grid(row=0, column=1, padx=(6, 0), sticky="ew")
 
-    def _browse(self):
+    def _browse(self, entry):
         folder = filedialog.askdirectory(title="Select source folder")
-        if folder:
-            self.source_entry.delete(0, "end")
-            self.source_entry.insert(0, folder)
+        if folder and entry is not None:
+            entry.delete(0, "end")
+            entry.insert(0, folder)
 
     def call_back_rename(self):
         folder = self.source_file.get_folder_path()
@@ -405,18 +371,64 @@ class Form(ctk.CTkFrame):
                 }
         return rename_data
 
+    def call_back_organize(self):
+        folder = self.source_file.get_folder_path()
+        if folder is None:
+            return
+        
+        destination = self.org_destination.get_folder_path()
+        if destination is None:
+            return
+        
+        organize_data = {
+                    "folder"      : folder,
+                    "organize_by" : self.organize_by.get(),
+                    "destination" : destination,
+                    "recursive"   : self.recursive.get()
+                }
+        return organize_data
+
     def change_form(self, mode):
         self._destroy_widgets()
-        self._build_1()
-        self._build_2(mode)
+        self._build(mode)
 
     def _destroy_widgets(self):
         for widget in self.winfo_children():
             widget.destroy()
 
-    def _preview(self):
-        self.on_rename_preview()
+    def _browse_form(self, text, row):
 
-    def _rename(self):
-        self.on_rename_execute()
+        self._section(text, row)
+
+        folder_row = ctk.CTkFrame(
+            master   = self, 
+            fg_color = "transparent")
+        folder_row.grid(row=row+1, column=0, columnspan=2, padx=18, sticky="ew")
+        folder_row.grid_columnconfigure(0, weight=1)
+        
+        entry = ctk.CTkEntry(
+            master           = folder_row, 
+            height           = 42, 
+            placeholder_text = "Select a folder...",
+            fg_color         = theme.background, 
+            border_color     = theme.border)
+        entry.grid(row=0, column=0, padx=(0, 8), sticky="ew")
+        
+        file = _SourceFolder(entry)
+
+        browse_icon = icon_image_convert(icon.browse, theme.text_primary, 25)
+        ctk.CTkButton(
+            master      = folder_row, 
+            text        = "Browse", 
+            width       = 95, 
+            height      = 42,
+            image       = browse_icon,
+            text_color  = theme.text_primary,
+            fg_color    = theme.action, 
+            hover_color = theme.action_hover,          
+            command     = lambda: self._browse(entry)).grid(row=0, column=1)
+        return file
+
+
+
 

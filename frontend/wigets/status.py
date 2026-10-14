@@ -285,19 +285,7 @@ class Status(ctk.CTkFrame):
             summary.get("total_files", 0),
         )
 
-        ready = summary.get(
-            "ready",
-            summary.get(
-                "renamed",
-                summary.get(
-                    "copied",
-                    summary.get(
-                        "moved",
-                        summary.get("organized", summary.get("found", 0)),
-                    ),
-                ),
-            ),
-        )
+        ready = summary.get("ready", summary.get( "renamed", summary.get("copied", summary.get("moved", summary.get("organized", summary.get("found", 0))))))
 
         exists = summary.get(
             "exists",

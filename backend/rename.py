@@ -17,6 +17,8 @@ class Rename:
         self.rename_count = 0
 
     def create_rename_folder(self):
+        self.rename_count = 0
+        self.rename_plan = []
         if not self.folder.is_dir():
             raise NotADirectoryError(self.folder)
 
@@ -29,14 +31,13 @@ class Rename:
             ),key=lambda p: p.name.lower(),)
 
         self.file_count = len(files)
-        self.rename_count = 0
-        self.rename_plan = []
+
 
         for number, source in enumerate(
             files, start=self.start_number
         ):
             if self.pattern:
-                name_pattern = f"{self.pattern}{number}{self.extension}"
+                name_pattern = f"{self.pattern}{number}"
                 name = name_pattern.format(
                     i=number,
                     number=number,
@@ -56,6 +57,7 @@ class Rename:
                 status = "Exist"
             else:
                 status = "Ready"
+                self.rename_count += 1
 
             self.rename_plan.append({
                 "source"     : source,
@@ -67,6 +69,7 @@ class Rename:
             })
 
         return self.rename_plan
+
 
     def rename_files(self):
         ready = [

@@ -12,13 +12,13 @@ from frontend.wigets.title  import Title
 
 
 class MainWindow(ctk.CTk):
-    def __init__(self, on_rename_folder, on_rename_preview, on_rename_execute, on_organize, on_copy, on_move, on_search, on_result):
+    def __init__(self, on_rename_preview, on_rename_execute, on_organize_preview, on_organize_execute, on_copy, on_move, on_search, on_result):
         super().__init__(fg_color=theme.background)
 
-        self.on_rename_folder  = on_rename_folder
-        self.on_rename_preview = on_rename_preview
-        self.on_rename_execute = on_rename_execute
-        self.on_organize  = on_organize
+        self.on_rename_preview   = on_rename_preview
+        self.on_rename_execute   = on_rename_execute
+        self.on_organize_preview = on_organize_preview
+        self.on_organize_execute = on_organize_execute
         self.on_copy      = on_copy    
         self.on_move      = on_move    
         self.on_search    = on_search  
@@ -257,7 +257,8 @@ class MainWindow(ctk.CTk):
             master              = self.main_frame,
             on_rename_preview   = self.preview_rename,
             on_rename_execute   = self.confirmed_rename,
-            on_organize = None,
+            on_organize_preview = self.preview_organize,
+            on_organize_execute = self.confirmed_organize,
             on_copy     = None,
             on_move     = None,
             on_search   = None)
@@ -284,29 +285,9 @@ class MainWindow(ctk.CTk):
         self.footer_frame.grid_columnconfigure(0, weight=1)
         self.footer_frame.grid_columnconfigure(1, weight=0)
 
-        self.status_label   = self.create_status_label("● Ready", "left")
-        self.status_total   = self.create_status_label("Total : 0", "right")
-        self.status_renamed = self.create_status_label("Renamed : 0", "right")
-        self.status_skipped = self.create_status_label("Skipped : 0", "right")
-        self.status_failed  = self.create_status_label("Failed : 0", "right")
-
-    def create_status_label(self, text, side="left"):
-        label = ctk.CTkLabel(
-            self.footer_frame,
-            text=text,
-            font=("Roboto", 14, "bold"),
-            text_color=theme.text_primary,
-        )
-
-        if side == "left":
-            label.grid(row=0, column=0, padx=25, pady=10, sticky="w")
-        else:
-            label.grid(row=0, column=1, padx=(10, 20), pady=10, sticky="e")
-
-        return label
 
     # =============================================================
-    # RENAME WORKFLOW 
+    # Rename Workfolw 
     # =============================================================
 
     def preview_rename(self):
@@ -315,8 +296,7 @@ class MainWindow(ctk.CTk):
         if rename_data is None:
             return
 
-        self.on_rename_folder(rename_data)
-        self.on_rename_preview()
+        self.on_rename_preview(rename_data)
 
     def confirmed_rename(self):
         rename_data = self.form.call_back_rename()
@@ -335,43 +315,38 @@ class MainWindow(ctk.CTk):
             self.on_result(rename_plan)
 
     # =============================================================
+    # Organize Workflow 
+    # =============================================================
+
+    def preview_organize(self):
+        organize_data = self.form.call_back_organize()
+
+        if organize_data is None:
+            return
+
+        self.on_organize_preview(organize_data)
+
+    def confirmed_organize(self):
+        organize_data = self.form.call_back_organize()
+
+        if organize_data is None:
+            return
+
+        dialog = Dialog(self)
+        self.wait_window(dialog)
+
+        if dialog.get_result():
+            organize_plan = self.on_organize_execute()
+
+            if not organize_plan:
+                return
+
+            self.on_result(organize_plan)
+
+    # =============================================================
     # DISPLAY
     # =============================================================
 
     def show_preview(self, rename_plan):
         self.view.display_card(rename_plan)
 
-    def show_status(self, file, status, data, extension):
-        extension = extension.replace(".", "").capitalize()
-
-        if status == "renamed":
-            self.status_label.configure(
-                text="● Success",
-                text_color=theme.success,
-            )
-
-        elif status == "empty":
-            self.status_label.configure(
-                text=f"● No {extension} Files Found",
-                text_color=theme.error,
-            )
-
-        elif status == "skipped":
-            self.status_label.configure(
-                text="● No Files Renamed",
-                text_color=theme.error,
-            )
-
-        elif status == "error":
-            self.status_label.configure(
-                text=f"{data}",
-                text_color=theme.error,
-            )
-            self.status_failed.configure(text=f"Failed : {file-data}")
-
-        else:
-            return
-
-        self.status_total.configure(text=f"Total : {file}")
-        self.status_renamed.configure(text=f"Renamed : {data}")
-        self.status_skipped.configure(text=f"Skipped : {file-data}")

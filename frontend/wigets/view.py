@@ -9,7 +9,6 @@ from tkinter_icons import BootstrapIcon
 
 
 class View(ctk.CTkFrame):
-    """Display preview plans and results for file operations."""
 
     MODE_CONFIG = {
         "rename": {
@@ -234,7 +233,7 @@ class View(ctk.CTkFrame):
     def _build_results(self):
         self.results_frame = ctk.CTkScrollableFrame(
             self,
-            fg_color="transparent",
+            fg_color=theme.background,
             corner_radius=0,
             scrollbar_button_color=theme.border,
             scrollbar_button_hover_color=theme.action_hover,
@@ -454,7 +453,7 @@ class View(ctk.CTkFrame):
 
         row = ctk.CTkFrame(
             self.results_frame,
-            fg_color=theme.panel_light,
+            fg_color=theme.panel,
             corner_radius=6,
             border_width=1,
             border_color=theme.border,

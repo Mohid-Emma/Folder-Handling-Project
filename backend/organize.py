@@ -17,20 +17,13 @@ class Organize:
         "Applications": {".exe", ".msi", ".bat"},
     }
 
-    def __init__(
-        self,
-        folder,
-        organize_by="File Type",
-        destination=None,
-        recursive=False,
-    ):
-        self.folder = Path(folder).expanduser()
-        self.destination = (
-            Path(destination).expanduser()
-            if destination else self.folder
-        )
-        self.organize_by = organize_by
-        self.recursive = recursive
+    def __init__(self, organize_data):
+        self.folder      = Path(organize_data["folder"]).expanduser()
+        self.organize_by = organize_data["organize_by"]
+        self.recursive   = organize_data["recursive"]
+        self.destination = (Path(organize_data["destination"]).expanduser()
+                            if organize_data["destination"] else self.folder)
+
         self.plan = []
 
     def get_category(self, file):
@@ -63,7 +56,6 @@ class Organize:
             destination = (
                 self.destination / category / source.name
             )
-
             if source.resolve() == destination.resolve():
                 status = "Skipped"
             elif destination.exists():

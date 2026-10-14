@@ -22,10 +22,10 @@ class App:
         self.current_plan = []
 
         self.main_window = MainWindow(
-            on_rename_folder  = self.set_rename,
-            on_rename_preview = self.rename_preview,
-            on_rename_execute = self.execute_rename,
-            on_organize = None,
+            on_rename_preview   = self.rename_preview,
+            on_rename_execute   = self.execute_rename,
+            on_organize_preview =self.preview_organize,
+            on_organize_execute =self.execute_organize,
             on_copy     = None,
             on_move     = None,
             on_search   = None,
@@ -36,11 +36,10 @@ class App:
     # RENAME: callbacks used by the existing MainWindow
     # --------------------------------------------------
 
-    def set_rename(self, rename_data):
+
+    def rename_preview(self,rename_data):
         self.rename = Rename(rename_data)
         self.current_operation = "rename"
-
-    def rename_preview(self):
         if self.rename is None:
             return self._notice("Choose a folder and configure rename settings.")
 
@@ -49,6 +48,8 @@ class App:
             self.current_operation = "rename"
             self._display(plan)
             self._set_status(f"Preview ready: {len(plan)} files.")
+            summary = self.rename.check_result()
+            self._update_summary(summary)
             return plan
 
         except (OSError, ValueError) as error:
@@ -100,14 +101,10 @@ class App:
     # ORGANIZE
     # --------------------------------------------------
 
-    def preview_organize(
-        self, folder, organize_by="File Type",
-        destination=None, recursive=False
-    ):
+    def preview_organize(self, organize_data):
+
         try:
-            self.organize = Organize(
-                folder, organize_by, destination, recursive
-            )
+            self.organize = Organize(organize_data)
             return self._preview(self.organize, "organize")
 
         except (OSError, ValueError) as error:
