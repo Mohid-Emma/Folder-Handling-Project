@@ -5,38 +5,31 @@ import shutil
 
 
 class Copy:
-    def __init__(
-        self,
-        source,
-        destination,
-        recursive=True,
-        keep_structure=True,
-        overwrite=False,
-    ):
-        self.source = Path(source).expanduser()
-        self.destination = Path(destination).expanduser()
-        self.recursive = recursive
-        self.keep_structure = keep_structure
-        self.overwrite = overwrite
+    def __init__(self, copy_data):
+        self.folder         = Path(copy_data["folder"]).expanduser()
+        self.destination    = Path(copy_data["destination"]).expanduser()
+        self.recursive      = copy_data["recursive"]
+        self.keep_structure = copy_data["keep_structure"]
+        self.overwrite      = copy_data["overwrite"]
         self.plan = []
 
     def create_plan(self):
-        if not self.source.is_dir():
-            raise NotADirectoryError(self.source)
+        if not self.folder.is_dir():
+            raise NotADirectoryError(self.folder)
 
         if (
             self.recursive
             and self.destination.resolve()
-            in self.source.resolve().parents
+            in self.folder.resolve().parents
         ):
             raise ValueError(
                 "Destination cannot be inside the source folder."
             )
 
         paths = (
-            self.source.rglob("*")
+            self.folder.rglob("*")
             if self.recursive
-            else self.source.iterdir()
+            else self.folder.iterdir()
         )
 
         self.plan = []
@@ -46,7 +39,7 @@ class Copy:
                 continue
 
             relative = (
-                source.relative_to(self.source)
+                source.relative_to(self.folder)
                 if self.keep_structure
                 else Path(source.name)
             )

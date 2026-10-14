@@ -18,8 +18,8 @@ class Form(ctk.CTkFrame):
 
     def __init__(self, master, 
                 on_rename_preview, on_rename_execute, 
-                on_organize_preview, on_organize_execute, 
-                on_copy, 
+                on_organize_preview, on_organize_execute,  
+                on_copy_preview, on_copy_execute, 
                 on_move_preview, on_move_execute, 
                 on_search, 
                 **kwargs):
@@ -32,6 +32,10 @@ class Form(ctk.CTkFrame):
         # Organize
         self.on_organize_preview = on_organize_preview
         self.on_organize_execute = on_organize_execute
+
+        # Copy
+        self.on_copy_preview = on_copy_preview
+        self.on_copy_execute = on_copy_execute
 
         # Move
         self.on_move_preview = on_move_preview
@@ -47,6 +51,11 @@ class Form(ctk.CTkFrame):
         # Organize
         self.organize_by        = ctk.StringVar(value="File Type")
         self.org_recursive      = ctk.StringVar(value=False)
+
+        # Copy
+        self.copy_recursive      = ctk.BooleanVar(value=True)
+        self.copy_keep_structure = ctk.BooleanVar(value=True)
+        self.copy_overwrite      = ctk.BooleanVar(value=False)
 
         # Move
         self.move_recursive      = ctk.BooleanVar(value=True)
@@ -71,9 +80,9 @@ class Form(ctk.CTkFrame):
 
         self.OPTIONS = {
         "rename"  : (("Skip files with the same name", self.skip_same_var), ("Show only video files", self.video_only_var)),
-        "organize": (("Create folders automatically", self.create_fold_auto), ("Include files in subfolders" , self.include_files_subf)),
-        "copy"    : (("Copy files (not move)", self.copy_not_move), ("Include subfolders" , self.include_subf), ("Keep original file structure", self.keep_ori_file_str)),
-        "move"    : (("Create destination folder if it doesn’t exist", self.create_nonexist_folder), ("Move empty folders" , self.move_emp_folder), ("Keep original folder structure", self.move_keep_structure)),
+        "organize": (("Create folders automatically", self.create_fold_auto), ("Include files in subfolders" , self.org_recursive)),
+        "copy"    : (("Copy files (not move)", self.copy_not_move), ("Include subfolders" , self.copy_recursive), ("Keep original file structure", self.copy_keep_structure)),
+        "move"    : (("Create destination folder if it doesn’t exist", self.create_nonexist_folder), ("Move empty folders" , self.move_recursive), ("Keep original folder structure", self.move_keep_structure)),
         "search"  : (("Include subfolders", self.include_files_subf), ("Case sensitive" , self.case_sensitive), ("Search file contents (slower)", self.sear_file_contents))
  }
         self.change_form("rename")
@@ -225,46 +234,16 @@ class Form(ctk.CTkFrame):
         self.button("Organize", self.on_organize_preview, self.on_organize_execute, 10)
     
     def _build_copy(self):
-        self._section("DESTINATION FOLDER", 2)
 
-        destination_row = ctk.CTkFrame(
-            master   = self, 
-            fg_color = "transparent")
-        destination_row.grid(row=3, column=0, columnspan=2, padx=18, sticky="ew")
-        destination_row.grid_columnconfigure(0, weight=1)
-        
-        self.destination_entry = ctk.CTkEntry(
-            master           = destination_row, 
-            height           = 42, 
-            placeholder_text = "Select a folder...",
-            fg_color         = theme.background, 
-            border_color     = theme.border)
-        self.destination_entry.grid(row=0, column=0, padx=(0, 8), sticky="ew")
-        
-        self.destination = _SourceFolder(self.destination_entry)
-
-        browse_icon = icon_image_convert(icon.browse, theme.text_primary, 25)
-        ctk.CTkButton(
-            master      = destination_row, 
-            text        = "Browse", 
-            width       = 95, 
-            height      = 42,
-            image       = browse_icon,
-            text_color  = theme.text_primary,
-            fg_color    = theme.action, 
-            hover_color = theme.action_hover,          
-            command     = self._browse).grid(row=0, column=1)
-
+        self.copy_destination = self._browse_form("DESTINATION FOLDER", 2)
         self.option("copy",4)
-        
-        self.button("Copy", None, None, 8)
+        self.button("Copy", self.on_copy_preview, self.on_copy_execute, 8)
             
     def _build_move(self):
         
         self.move_destination = self._browse_form("DESTINATION FOLDER", 2)
         self.option("move", 4)
         self.button("Move", self.on_move_preview, self.on_move_execute, 8)
-
 
     def _build_search(self):
         self._section("SEARCH BY", 2)
@@ -406,6 +385,24 @@ class Form(ctk.CTkFrame):
                     "recursive"   : self.org_recursive.get()
                 }
         return organize_data
+
+    def call_back_copy(self):
+        folder = self.source_file.get_folder_path()
+        if folder is None:
+            return
+        
+        destination = self.copy_destination.get_folder_path()
+        if destination is None:
+            return
+        
+        copy_data = {
+                    "folder"         : folder,
+                    "destination"    : destination,
+                    "recursive"      : self.copy_recursive.get(),
+                    "keep_structure" : self.copy_keep_structure.get(),
+                    "overwrite"      : self.copy_overwrite.get()
+                }
+        return copy_data
 
     def call_back_move(self):
         folder = self.source_file.get_folder_path()

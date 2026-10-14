@@ -26,7 +26,8 @@ class App:
             on_rename_execute   = self.execute_rename,
             on_organize_preview = self.preview_organize,
             on_organize_execute = self.execute_organize,
-            on_copy     = None,
+            on_copy_preview     = self.preview_copy,
+            on_copy_execute     = self.execute_copy,
             on_move_preview     = self.preview_move,
             on_move_execute     = self.execute_move,
             on_search   = None,
@@ -124,15 +125,10 @@ class App:
     # COPY
     # --------------------------------------------------
 
-    def preview_copy(
-        self, source, destination, recursive=True,
-        keep_structure=True, overwrite=False
-    ):
+    def preview_copy(self, copy_data):
+        
         try:
-            self.copy = Copy(
-                source, destination, recursive,
-                keep_structure, overwrite
-            )
+            self.copy = Copy(copy_data)
             return self._preview(self.copy, "copy")
 
         except (OSError, ValueError) as error:

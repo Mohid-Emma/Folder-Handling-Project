@@ -15,7 +15,7 @@ class MainWindow(ctk.CTk):
     def __init__(self, 
         on_rename_preview, on_rename_execute, 
         on_organize_preview, on_organize_execute,
-        on_copy,  
+        on_copy_preview, on_copy_execute,
         on_move_preview, on_move_execute,
         on_search, 
         on_result):
@@ -23,11 +23,16 @@ class MainWindow(ctk.CTk):
 
         self.on_rename_preview   = on_rename_preview
         self.on_rename_execute   = on_rename_execute
+
         self.on_organize_preview = on_organize_preview
-        self.on_organize_execute = on_organize_execute
-        self.on_copy      = on_copy  
+        self.on_organize_execute = on_organize_execute 
+
+        self.on_copy_preview     = on_copy_preview
+        self.on_copy_execute     = on_copy_execute 
+
         self.on_move_preview     = on_move_preview
         self.on_move_execute     = on_move_execute          
+        
         self.on_search    = on_search  
         self.on_result    = on_result
 
@@ -266,7 +271,8 @@ class MainWindow(ctk.CTk):
             on_rename_execute   = self.confirmed_rename,
             on_organize_preview = self.preview_organize,
             on_organize_execute = self.confirmed_organize,
-            on_copy     = None,
+            on_copy_preview     = self.preview_copy,
+            on_copy_execute     = self.confirmed_copy,
             on_move_preview     = self.preview_move,
             on_move_execute     = self.confirmed_move,
             on_search   = None)
@@ -350,6 +356,36 @@ class MainWindow(ctk.CTk):
                 return
 
             self.on_result(organize_plan)
+
+    # =============================================================
+    # Copy Workflow 
+    # =============================================================
+
+    def preview_copy(self):
+        copy_data = self.form.call_back_copy()
+
+        if copy_data is None:
+            return
+
+        self.on_copy_preview(copy_data)
+
+    def confirmed_copy(self):
+        copy_data = self.form.call_back_copy()
+
+        if copy_data is None:
+            return
+
+        dialog = Dialog(self)
+        self.wait_window(dialog)
+
+        if dialog.get_result():
+            copy_plan = self.on_copy_execute()
+
+            if not copy_plan:
+                return
+
+            self.on_result(copy_plan)
+
 
     # =============================================================
     # Move Workflow 
