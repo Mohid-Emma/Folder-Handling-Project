@@ -21,7 +21,7 @@ class Organize:
         self.folder      = Path(organize_data["folder"]).expanduser()
         self.organize_by = organize_data["organize_by"]
         self.recursive   = organize_data["recursive"]
-        self.destination = (Path(organize_data["destination"]).expanduser()
+        self.destination = Path(organize_data["destination"].expanduser()
                             if organize_data["destination"] else self.folder)
 
         self.plan = []

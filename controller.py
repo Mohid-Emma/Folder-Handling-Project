@@ -24,10 +24,11 @@ class App:
         self.main_window = MainWindow(
             on_rename_preview   = self.rename_preview,
             on_rename_execute   = self.execute_rename,
-            on_organize_preview =self.preview_organize,
-            on_organize_execute =self.execute_organize,
+            on_organize_preview = self.preview_organize,
+            on_organize_execute = self.execute_organize,
             on_copy     = None,
-            on_move     = None,
+            on_move_preview     = self.preview_move,
+            on_move_execute     = self.execute_move,
             on_search   = None,
             on_result   = self.show_result,
         )
@@ -150,14 +151,10 @@ class App:
     # MOVE
     # --------------------------------------------------
 
-    def preview_move(
-        self, source, destination, recursive=True,
-        keep_structure=True
-    ):
+    def preview_move(self, move_date):
+    
         try:
-            self.move = Move(
-                source, destination, recursive, keep_structure
-            )
+            self.move = Move(move_date)
             return self._preview(self.move, "move")
 
         except (OSError, ValueError) as error:

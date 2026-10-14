@@ -12,15 +12,22 @@ from frontend.wigets.title  import Title
 
 
 class MainWindow(ctk.CTk):
-    def __init__(self, on_rename_preview, on_rename_execute, on_organize_preview, on_organize_execute, on_copy, on_move, on_search, on_result):
+    def __init__(self, 
+        on_rename_preview, on_rename_execute, 
+        on_organize_preview, on_organize_execute,
+        on_copy,  
+        on_move_preview, on_move_execute,
+        on_search, 
+        on_result):
         super().__init__(fg_color=theme.background)
 
         self.on_rename_preview   = on_rename_preview
         self.on_rename_execute   = on_rename_execute
         self.on_organize_preview = on_organize_preview
         self.on_organize_execute = on_organize_execute
-        self.on_copy      = on_copy    
-        self.on_move      = on_move    
+        self.on_copy      = on_copy  
+        self.on_move_preview     = on_move_preview
+        self.on_move_execute     = on_move_execute          
         self.on_search    = on_search  
         self.on_result    = on_result
 
@@ -173,13 +180,13 @@ class MainWindow(ctk.CTk):
             self.side_bar_frame, icon.organize_fill, "Organize",
             lambda: self.change_tool("organize"), 2
         )
-        self.move_btn = self.create_button(
-            self.side_bar_frame, icon.move, "Move",
-            lambda: self.change_tool("move"), 3
-        )
         self.copy_btn = self.create_button(
             self.side_bar_frame, icon.copy, "Copy",
-            lambda: self.change_tool("copy"), 4
+            lambda: self.change_tool("copy"), 3
+        )
+        self.move_btn = self.create_button(
+            self.side_bar_frame, icon.move, "Move",
+            lambda: self.change_tool("move"), 4
         )
         self.search_btn = self.create_button(
             self.side_bar_frame, icon.search, "Search",
@@ -192,8 +199,8 @@ class MainWindow(ctk.CTk):
         modes = {
             "rename"  : self.rename_btn,
             "organize": self.organize_btn,
-            "move"    : self.move_btn,
             "copy"    : self.copy_btn,
+            "move"    : self.move_btn,
             "search"  : self.search_btn,
         }
 
@@ -260,7 +267,8 @@ class MainWindow(ctk.CTk):
             on_organize_preview = self.preview_organize,
             on_organize_execute = self.confirmed_organize,
             on_copy     = None,
-            on_move     = None,
+            on_move_preview     = self.preview_move,
+            on_move_execute     = self.confirmed_move,
             on_search   = None)
 
         self.source_file = self.form.source_file
@@ -344,9 +352,38 @@ class MainWindow(ctk.CTk):
             self.on_result(organize_plan)
 
     # =============================================================
-    # DISPLAY
+    # Move Workflow 
     # =============================================================
 
-    def show_preview(self, rename_plan):
-        self.view.display_card(rename_plan)
+    def preview_move(self):
+        move_data = self.form.call_back_move()
+
+        if move_data is None:
+            return
+
+        self.on_move_preview(move_data)
+
+    def confirmed_move(self):
+        move_data = self.form.call_back_move()
+
+        if move_data is None:
+            return
+
+        dialog = Dialog(self)
+        self.wait_window(dialog)
+
+        if dialog.get_result():
+            move_plan = self.on_move_execute()
+
+            if not move_plan:
+                return
+
+            self.on_result(move_plan)
+
+    # =============================================================
+    # Display
+    # =============================================================
+
+    def show_preview(self, plan):
+        self.view.display_card(plan)
 

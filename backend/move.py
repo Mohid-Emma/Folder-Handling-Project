@@ -5,36 +5,30 @@ import shutil
 
 
 class Move:
-    def __init__(
-        self,
-        source,
-        destination,
-        recursive=True,
-        keep_structure=True,
-    ):
-        self.source = Path(source).expanduser()
-        self.destination = Path(destination).expanduser()
-        self.recursive = recursive
-        self.keep_structure = keep_structure
+    def __init__(self, move_date):
+        self.folder         = Path(move_date["folder"]).expanduser()
+        self.destination    = Path(move_date["destination"]).expanduser()
+        self.recursive      = move_date["recursive"]
+        self.keep_structure = move_date["keep_structure"]
         self.plan = []
 
     def create_plan(self):
-        if not self.source.is_dir():
-            raise NotADirectoryError(self.source)
+        if not self.folder.is_dir():
+            raise NotADirectoryError(self.folder)
 
         if (
             self.recursive
             and self.destination.resolve()
-            in self.source.resolve().parents
+            in self.folder.resolve().parents
         ):
             raise ValueError(
                 "Destination cannot be inside the source folder."
             )
 
         paths = (
-            self.source.rglob("*")
+            self.folder.rglob("*")
             if self.recursive
-            else self.source.iterdir()
+            else self.folder.iterdir()
         )
 
         self.plan = []
@@ -44,7 +38,7 @@ class Move:
                 continue
 
             relative = (
-                source.relative_to(self.source)
+                source.relative_to(self.folder)
                 if self.keep_structure
                 else Path(source.name)
             )

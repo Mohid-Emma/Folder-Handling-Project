@@ -5,7 +5,6 @@ import config.theme as theme
 import config.icon as icon
 
 from utils.file_utils import icon_image_convert
-from tkinter_icons import BootstrapIcon
 
 
 class View(ctk.CTkFrame):
