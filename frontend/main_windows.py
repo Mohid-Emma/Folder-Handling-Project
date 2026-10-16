@@ -1,14 +1,10 @@
 # main_windows.py
 import customtkinter as ctk
-import config.theme as theme
-import config.icon as icon
+import config.theme  as theme
+import config.icon   as icon
 
-from utils.file_utils       import icon_image_convert
-from frontend.wigets.view   import View
-from frontend.wigets.dialog import Dialog
-from frontend.wigets.form   import Form
-from frontend.wigets.status import Status
-from frontend.wigets.title  import Title
+from utils    import icon_image_convert
+from frontend import Title, Form, View, Status, Dialog
 
 
 class MainWindow(ctk.CTk):

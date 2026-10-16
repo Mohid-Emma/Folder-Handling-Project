@@ -1,8 +1,8 @@
-import customtkinter    as     ctk
-import config.theme     as     theme
-import config.icon      as     icon
-from   utils.file_utils import icon_image_convert
-from   tkinter          import filedialog, messagebox
+import customtkinter as     ctk
+import config.theme  as     theme
+import config.icon   as     icon
+from   utils         import icon_image_convert
+from   tkinter       import filedialog, messagebox
 
 
 class _SourceFolder:

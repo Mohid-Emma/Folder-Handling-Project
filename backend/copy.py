@@ -11,7 +11,7 @@ class Copy:
         self.recursive      = copy_data["recursive"]
         self.keep_structure = copy_data["keep_structure"]
         self.overwrite      = copy_data["overwrite"]
-        self.plan = []
+        self.plan           = []
 
     def create_plan(self):
         if not self.folder.is_dir():

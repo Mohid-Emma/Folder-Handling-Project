@@ -1,10 +1,9 @@
 
 import customtkinter as ctk
+import config.theme  as theme
+import config.icon   as icon
 
-import config.theme as theme
-import config.icon as icon
-
-from utils.file_utils import icon_image_convert
+from utils import icon_image_convert
 
 
 class View(ctk.CTkFrame):

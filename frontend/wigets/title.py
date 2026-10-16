@@ -1,7 +1,7 @@
 import customtkinter as ctk
-import config.theme as theme
-import config.icon as icon
-from utils.file_utils import icon_image_convert
+import config.theme  as theme
+import config.icon   as icon
+from utils import icon_image_convert
 
 
 class Title(ctk.CTkFrame):

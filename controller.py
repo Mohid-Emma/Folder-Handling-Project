@@ -1,13 +1,8 @@
+# controller.py
 
-from tkinter import messagebox
-
-from backend.rename import Rename
-from backend.organize import Organize
-from backend.copy import Copy
-from backend.move import Move
-from backend.search import Search
-
-from frontend.main_windows import MainWindow
+from tkinter  import messagebox
+from backend  import Rename, Organize, Copy, Move, Search
+from frontend import MainWindow
 
 
 class App:
