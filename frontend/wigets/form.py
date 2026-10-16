@@ -251,6 +251,7 @@ class Form(ctk.CTkFrame):
         self._section("SEARCH BY", 2)
         ctk.CTkOptionMenu(
             master             = self, 
+            variable           =self.search_by,
             values             = ["All Files","Video","Image","Audio","Document","Archive","Other"], 
             height             = 46, 
             fg_color           = theme.panel_light, 
