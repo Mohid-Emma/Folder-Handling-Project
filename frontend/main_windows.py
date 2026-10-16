@@ -17,8 +17,7 @@ class MainWindow(ctk.CTk):
         on_organize_preview, on_organize_execute,
         on_copy_preview, on_copy_execute,
         on_move_preview, on_move_execute,
-        on_search, 
-        on_result):
+        on_run_search, on_result):
         super().__init__(fg_color=theme.background)
 
         self.on_rename_preview   = on_rename_preview
@@ -33,8 +32,8 @@ class MainWindow(ctk.CTk):
         self.on_move_preview     = on_move_preview
         self.on_move_execute     = on_move_execute          
         
-        self.on_search    = on_search  
-        self.on_result    = on_result
+        self.on_run_search       = on_run_search  
+        self.on_result           = on_result
 
         self.current_mode = "rename"
 
@@ -275,7 +274,7 @@ class MainWindow(ctk.CTk):
             on_copy_execute     = self.confirmed_copy,
             on_move_preview     = self.preview_move,
             on_move_execute     = self.confirmed_move,
-            on_search   = None)
+            on_run_search       = self.run_search)
 
         self.source_file = self.form.source_file
         
@@ -415,6 +414,18 @@ class MainWindow(ctk.CTk):
                 return
 
             self.on_result(move_plan)
+
+    # =============================================================
+    # Search Workflow 
+    # =============================================================
+
+    def run_search(self):
+        search_data = self.form.call_back_search()
+
+        if search_data is None:
+            return
+
+        self.on_run_search(search_data)
 
     # =============================================================
     # Display

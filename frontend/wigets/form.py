@@ -21,7 +21,7 @@ class Form(ctk.CTkFrame):
                 on_organize_preview, on_organize_execute,  
                 on_copy_preview, on_copy_execute, 
                 on_move_preview, on_move_execute, 
-                on_search, 
+                on_run_search, 
                 **kwargs):
         super().__init__(master, fg_color=theme.panel, corner_radius=10, border_width=1, border_color=theme.border, **kwargs)
 
@@ -40,6 +40,9 @@ class Form(ctk.CTkFrame):
         # Move
         self.on_move_preview = on_move_preview
         self.on_move_execute = on_move_execute
+
+        # Search
+        self.on_run_search = on_run_search
 
         # Rename
         self.pattern_var        = ctk.StringVar(value="Episode")
@@ -61,21 +64,20 @@ class Form(ctk.CTkFrame):
         self.move_recursive      = ctk.BooleanVar(value=True)
         self.move_keep_structure = ctk.BooleanVar(value=True)
 
+        # Search
+        self.search_query        = ctk.StringVar(value="")
+        self.search_by           = ctk.StringVar(value="All Files")
+        self.search_recursive    = ctk.BooleanVar(value=True)
+        self.case_sensitive      = ctk.BooleanVar(value=False)
+        self.search_contents     = ctk.BooleanVar(value=False)
+        self.modified_within     = None # ctk.BooleanVar(value=False)
+
+
         self.skip_same_var      = ctk.BooleanVar(value=True)
         self.video_only_var     = ctk.BooleanVar(value=True)
- 
         self.create_fold_auto   = ctk.BooleanVar(value=True)
-        self.include_files_subf = ctk.BooleanVar(value=True)
- 
-        self.create_nonexist_folder = ctk.BooleanVar(value=True)
-        self.move_emp_folder    = ctk.BooleanVar(value=True)
-        
+        self.create_nonexist_folder = ctk.BooleanVar(value=True)        
         self.copy_not_move      = ctk.BooleanVar(value=True)
-        self.include_subf       = ctk.BooleanVar(value=True)
-        self.keep_ori_file_str  = ctk.BooleanVar(value=True)
-
-        self.case_sensitive     = ctk.BooleanVar(value=True)
-        self.sear_file_contents = ctk.BooleanVar(value=True)
 
 
         self.OPTIONS = {
@@ -83,7 +85,7 @@ class Form(ctk.CTkFrame):
         "organize": (("Create folders automatically", self.create_fold_auto), ("Include files in subfolders" , self.org_recursive)),
         "copy"    : (("Copy files (not move)", self.copy_not_move), ("Include subfolders" , self.copy_recursive), ("Keep original file structure", self.copy_keep_structure)),
         "move"    : (("Create destination folder if it doesn’t exist", self.create_nonexist_folder), ("Move empty folders" , self.move_recursive), ("Keep original folder structure", self.move_keep_structure)),
-        "search"  : (("Include subfolders", self.include_files_subf), ("Case sensitive" , self.case_sensitive), ("Search file contents (slower)", self.sear_file_contents))
+        "search"  : (("Include subfolders", self.search_recursive), ("Case sensitive" , self.case_sensitive), ("Search file contents (slower)", self.search_contents))
  }
         self.change_form("rename")
 
@@ -258,8 +260,17 @@ class Form(ctk.CTkFrame):
             row=3, column=0, padx=18, columnspan=2, sticky="ew")
 
         self.option("search", 4)
-            
-        self.button("Search", None, None, 8)
+
+        search_icon = icon_image_convert(icon.search, theme.text_secondary, 25)
+        ctk.CTkButton(
+            master       = self, 
+            text         = "Search", 
+            height       = 46,
+            image        = search_icon,
+            fg_color     = theme.action, 
+            hover_color  = theme.action_hover,
+            command      = self.on_run_search
+            ).grid(row=8, column=0, columnspan=2, padx=(6, 0), sticky="ew")
 
     def _browse_form(self, text, row):
 
@@ -420,6 +431,22 @@ class Form(ctk.CTkFrame):
                     "keep_structure" : self.move_keep_structure.get()
                 }
         return move_data
+
+    def call_back_search(self):
+        folder = self.source_file.get_folder_path()
+        if folder is None:
+            return
+                
+        search_data = {
+                    "folder"          : folder,
+                    "query"           : self.search_query.get(),
+                    "file_type"       : self.search_by.get(),
+                    "recursive"       : self.search_recursive.get(),
+                    "case_sensitive"  : self.case_sensitive.get(),
+                    "search_contents" : self.search_contents.get(),
+                    "modified_within" : self.modified_within
+                }
+        return search_data
     
     def change_form(self, mode):
         self._destroy_widgets()

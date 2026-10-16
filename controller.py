@@ -30,8 +30,8 @@ class App:
             on_copy_execute     = self.execute_copy,
             on_move_preview     = self.preview_move,
             on_move_execute     = self.execute_move,
-            on_search   = None,
-            on_result   = self.show_result,
+            on_run_search       = self.run_search,
+            on_result           = self.show_result,
         )
 
     # --------------------------------------------------
@@ -126,7 +126,7 @@ class App:
     # --------------------------------------------------
 
     def preview_copy(self, copy_data):
-        
+
         try:
             self.copy = Copy(copy_data)
             return self._preview(self.copy, "copy")
@@ -169,16 +169,10 @@ class App:
     # SEARCH
     # --------------------------------------------------
 
-    def run_search(
-        self, folder, query="", file_type="All Files",
-        recursive=True, case_sensitive=False,
-        search_contents=False, modified_within=None
-    ):
+    def run_search(self, search_data):
+
         try:
-            self.search = Search(
-                folder, query, file_type, recursive,
-                case_sensitive, search_contents, modified_within
-            )
+            self.search = Search(search_data)
 
             results = self.search.search_files()
             self.current_operation = "search"

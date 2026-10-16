@@ -10,23 +10,15 @@ class Search:
         ".html", ".xml", ".log",
     }
 
-    def __init__(
-        self,
-        folder,
-        query="",
-        file_type="All Files",
-        recursive=True,
-        case_sensitive=False,
-        search_contents=False,
-        modified_within=None,
-    ):
-        self.folder = Path(folder).expanduser()
-        self.query = query
-        self.file_type = file_type
-        self.recursive = recursive
-        self.case_sensitive = case_sensitive
-        self.search_contents = search_contents
-        self.modified_within = modified_within
+    def __init__(self, search_data):
+
+        self.folder          = Path(search_data["folder"]).expanduser()
+        self.query           = search_data["query"]
+        self.file_type       = search_data["file_type"]
+        self.recursive       = search_data["recursive"]
+        self.case_sensitive  = search_data["case_sensitive"]
+        self.search_contents = search_data["search_contents"]
+        self.modified_within = search_data["modified_within"]
         self.results = []
 
     def search_files(self):
@@ -55,7 +47,6 @@ class Search:
         for path in paths:
             if not path.is_file():
                 continue
-
             file_type = self.file_type.strip()
             if file_type.lower() not in ("all files", "*", ".*"):
                 extension = (
