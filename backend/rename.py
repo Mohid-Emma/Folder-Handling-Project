@@ -4,7 +4,12 @@ from pathlib import Path
 
 
 class Rename:
-    def __init__(self,rename_data):
+    numberformat = {
+                "1 (Normal)"         : "01",
+                "01 (Two Digits)"    : "02",
+                "001 (Three Digits)" : "03" }
+    
+    def __init__(self, rename_data):
         self.folder        = Path(rename_data["folder"]).expanduser()
         self.extension     = rename_data["extension"]
         self.pattern       = rename_data["pattern"]
@@ -12,30 +17,27 @@ class Rename:
         self.start_number  = int(rename_data["start_number"])
         self.number_format = rename_data["number_format"]
 
-        self.rename_plan  = []
+        self.plan  = []
         self.file_count   = 0
         self.rename_count = 0
 
-    def create_rename_folder(self):
+    def create_plan(self):
         self.rename_count = 0
-        self.rename_plan = []
+        self.plan = []
         if not self.folder.is_dir():
             raise NotADirectoryError(self.folder)
 
         extension = self.extension.lower()
         files = sorted(
-            (p for p in self.folder.iterdir()
-                if p.is_file() and (
-                    extension in ("*", "all files")
-                    or p.suffix.lower() == extension)
-            ),key=lambda p: p.name.lower(),)
+            (file for file in self.folder.iterdir() 
+            if file.is_file() and 
+            (extension in ("*", "all files") or file.suffix.lower() == extension)
+            ),key=lambda file: file.name.lower())
 
         self.file_count = len(files)
 
 
-        for number, source in enumerate(
-            files, start=self.start_number
-        ):
+        for number, source in enumerate(files, start=self.start_number):
             if self.pattern:
                 name_pattern = f"{self.pattern}{number}"
                 name = name_pattern.format(
@@ -44,13 +46,12 @@ class Rename:
                     quality=self.quality,
                 )
             else:
-                width = int(self.numberformat())
+                width = int(self.numberformat[self.number_format])
                 name = f"EP.{number:0{width}d}.v0.{self.quality}"
 
             destination = source.with_name(
-                name + source.suffix
-            )
-
+                name + source.suffix )
+            
             if source == destination:
                 status = "Skipped"
             elif destination.exists():
@@ -59,21 +60,20 @@ class Rename:
                 status = "Ready"
                 self.rename_count += 1
 
-            self.rename_plan.append({
+            self.plan.append({
                 "source"     : source,
                 "destination": destination,
                 "old_name"   : source.name,
                 "new_name"   : destination.name,
                 "status"     : status,
-                "message"    : "",
-            })
+                "message"    : "", })
 
-        return self.rename_plan
+        return self.plan
 
 
     def rename_files(self):
         ready = [
-            item for item in self.rename_plan
+            item for item in self.plan
             if item["status"] == "Ready"
         ]
 
@@ -112,7 +112,7 @@ class Rename:
                 item["message"] = ""
                 self.rename_count += 1
 
-            return self.rename_plan
+            return self.plan
 
         except OSError as error:
             # Best-effort rollback for files still in temporary names.
@@ -130,32 +130,3 @@ class Rename:
                     item["message"] = str(error)
 
             raise
-    def numberformat(self):
-            if self.number_format == "1 (Normal)":
-                return "01"
-            elif self.number_format == "01 (Two Digits)":
-                return "02"
-            elif self.number_format == "001 (Three Digits)":
-                return "03"
-            else:
-                return "02"
-            
-
-    def check_result(self):
-        skipped = sum(
-            item["status"] in ("Skipped", "Exist")
-            for item in self.rename_plan
-        )
-        failed = sum(
-            item["status"] == "Error"
-            for item in self.rename_plan
-        )
-
-        return {
-            "total"    : self.file_count,
-            "renamed"  : self.rename_count,
-            "skipped"  : skipped,
-            "failed"   : failed,
-            "extension": self.extension,
-        }
-        

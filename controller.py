@@ -15,81 +15,43 @@ class App:
 
         self.current_operation = "rename"
         self.current_plan = []
-
-        self.main_window = MainWindow(
-            on_rename_preview   = self.rename_preview,
-            on_rename_execute   = self.execute_rename,
-            on_organize_preview = self.preview_organize,
-            on_organize_execute = self.execute_organize,
-            on_copy_preview     = self.preview_copy,
-            on_copy_execute     = self.execute_copy,
-            on_move_preview     = self.preview_move,
-            on_move_execute     = self.execute_move,
-            on_run_search       = self.run_search,
-            on_result           = self.show_result,
-        )
-
+        
+        operation = {
+            "rename_preview"   : self.rename_preview,
+            "rename_execute"   : self.execute_rename,
+            "organize_preview" : self.preview_organize,
+            "organize_execute" : self.execute_organize,
+            "copy_preview"     : self.preview_copy,
+            "copy_execute"     : self.execute_copy,
+            "move_preview"     : self.preview_move,
+            "move_execute"     : self.execute_move,
+            "run_search"       : self.run_search,
+            "result"           : self.show_result,
+        }
+        self.main_window = MainWindow(operation)
     # --------------------------------------------------
     # RENAME: callbacks used by the existing MainWindow
     # --------------------------------------------------
 
 
     def rename_preview(self,rename_data):
-        self.rename = Rename(rename_data)
-        self.current_operation = "rename"
-        if self.rename is None:
-            return self._notice("Choose a folder and configure rename settings.")
 
         try:
-            plan = self.rename.create_rename_folder()
-            self.current_operation = "rename"
-            self._display(plan)
-            self._set_status(f"Preview ready: {len(plan)} files.")
-            summary = self.rename.check_result()
-            self._update_summary(summary)
-            return plan
+            self.rename = Rename(rename_data)
+            return self._preview(self.rename, "rename")
 
         except (OSError, ValueError) as error:
             self._error("Rename preview failed", error)
             return None
 
     def execute_rename(self):
-        if self.rename is None:
-            return self._notice("Create a rename preview first.")
-
-        if not self.rename.rename_plan:
-            self.rename_preview()
-
-        plan = self.rename.rename_plan
-        ready = sum(x["status"] == "Ready" for x in plan)
-
-        if not ready:
-            self._notice("There are no eligible files to rename.")
-            return plan
-
-        confirmed = messagebox.askyesno(
-            "Confirm Rename",
-            f"Rename {ready} file(s)?\n\n"
-            "This will change the original filenames.",
-            parent=self.main_window,
+        return self._execute(
+            "Rename",
+            self.rename,
+            "rename_files",
+            "This will change the original filenames."
         )
-
-        if not confirmed:
-            return None
-
-        try:
-            plan = self.rename.rename_files()
-            summary = self.rename.check_result()
-            self._display(plan)
-            self._update_summary(summary)
-            self._set_status("Rename completed.")
-            return plan
-
-        except OSError as error:
-            self._display(self.rename.rename_plan)
-            self._error("Rename failed", error)
-            return self.rename.rename_plan
-
+    
     def show_result(self, plan):
         if plan is not None:
             self._display(plan)
@@ -113,8 +75,7 @@ class App:
             "Organize",
             self.organize,
             "organize_files",
-            "Organize the listed files into category folders?",
-        )
+            "Organize the listed files into category folders?" )
 
     # --------------------------------------------------
     # COPY
@@ -275,7 +236,7 @@ class App:
         labels = {
             "status_total": f"Total: {summary.get('total', 0)}",
             "status_renamed": (
-                f"Completed: {summary.get('completed', summary.get('renamed', 0))}"
+                f"Completed: {summary.get('completed')}"
             ),
             "status_skipped": f"Skipped: {summary.get('skipped', 0)}",
             "status_failed": f"Failed: {summary.get('failed', 0)}",

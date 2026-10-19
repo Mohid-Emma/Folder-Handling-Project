@@ -8,28 +8,24 @@ from frontend import Title, Form, View, Status, Dialog
 
 
 class MainWindow(ctk.CTk):
-    def __init__(self, 
-        on_rename_preview, on_rename_execute, 
-        on_organize_preview, on_organize_execute,
-        on_copy_preview, on_copy_execute,
-        on_move_preview, on_move_execute,
-        on_run_search, on_result):
+    def __init__(self, operation):
         super().__init__(fg_color=theme.background)
-
-        self.on_rename_preview   = on_rename_preview
-        self.on_rename_execute   = on_rename_execute
-
-        self.on_organize_preview = on_organize_preview
-        self.on_organize_execute = on_organize_execute 
-
-        self.on_copy_preview     = on_copy_preview
-        self.on_copy_execute     = on_copy_execute 
-
-        self.on_move_preview     = on_move_preview
-        self.on_move_execute     = on_move_execute          
         
-        self.on_run_search       = on_run_search  
-        self.on_result           = on_result
+
+        self.on_rename_preview   = operation["rename_preview"]
+        self.on_rename_execute   = operation["rename_execute"]
+
+        self.on_organize_preview = operation["organize_preview"]
+        self.on_organize_execute = operation["organize_execute"] 
+        
+        self.on_copy_preview     = operation["copy_preview"]
+        self.on_copy_execute     = operation["copy_execute"] 
+        
+        self.on_move_preview     = operation["move_preview"]
+        self.on_move_execute     = operation["move_execute"]          
+        
+        self.on_run_search       = operation["run_search"]  
+        self.on_result           = operation["result"]
 
         self.current_mode = "rename"
 
