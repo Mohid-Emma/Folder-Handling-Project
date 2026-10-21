@@ -5,9 +5,9 @@ from pathlib import Path
 
 class Rename:
     numberformat = {
-                "1 (Normal)"         : "01",
-                "01 (Two Digits)"    : "02",
-                "001 (Three Digits)" : "03" }
+        "1 (Normal)"         : "01",
+        "01 (Two Digits)"    : "02",
+        "001 (Three Digits)" : "03" }
     
     def __init__(self, rename_data):
         self.folder        = Path(rename_data["folder"]).expanduser()

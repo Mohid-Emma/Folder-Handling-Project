@@ -1,20 +1,27 @@
 # controller.py
 
 from tkinter  import messagebox
-from backend  import Rename, Organize, Copy, Move, Search
 from frontend import MainWindow
 
 
 class App:
-    def __init__(self):
-        self.rename = None
+    def __init__(self, factory):
+        self.rename_factory   = factory["rename"]
+        self.organize_factory = factory["organize"]
+        self.copy_factory     = factory["copy"]
+        self.move_factory     = factory["move"]
+        self.search_factory   = factory["search"]
+
+        self.rename   = None
         self.organize = None
-        self.copy = None
-        self.move = None
-        self.search = None
+        self.copy     = None
+        self.move     = None
+        self.search   = None
 
         self.current_operation = "rename"
         self.current_plan = []
+
+
         
         operation = {
             "rename_preview"   : self.rename_preview,
@@ -34,10 +41,10 @@ class App:
     # --------------------------------------------------
 
 
-    def rename_preview(self,rename_data):
+    def rename_preview(self, rename_data):
 
         try:
-            self.rename = Rename(rename_data)
+            self.rename = self.rename_factory(rename_data)
             return self._preview(self.rename, "rename")
 
         except (OSError, ValueError) as error:
@@ -63,7 +70,7 @@ class App:
     def preview_organize(self, organize_data):
 
         try:
-            self.organize = Organize(organize_data)
+            self.organize = self.organize_factory(organize_data)
             return self._preview(self.organize, "organize")
 
         except (OSError, ValueError) as error:
@@ -84,7 +91,7 @@ class App:
     def preview_copy(self, copy_data):
 
         try:
-            self.copy = Copy(copy_data)
+            self.copy = self.copy_factory(copy_data)
             return self._preview(self.copy, "copy")
 
         except (OSError, ValueError) as error:
@@ -106,7 +113,7 @@ class App:
     def preview_move(self, move_date):
     
         try:
-            self.move = Move(move_date)
+            self.move = self.move_factory(move_date)
             return self._preview(self.move, "move")
 
         except (OSError, ValueError) as error:
@@ -128,7 +135,7 @@ class App:
     def run_search(self, search_data):
 
         try:
-            self.search = Search(search_data)
+            self.search = self.search_factory(search_data)
 
             results = self.search.search_files()
             self.current_operation = "search"

@@ -29,6 +29,7 @@ class MainWindow(ctk.CTk):
 
         self.current_mode = "rename"
 
+
         self.title("File & Folder Manager")
         self.geometry("1500x900")
         self.minsize(1100, 700)
@@ -256,17 +257,18 @@ class MainWindow(ctk.CTk):
         )
 
         # Form/settings panel
-        self.form = Form(
-            master              = self.main_frame,
-            on_rename_preview   = self.preview_rename,
-            on_rename_execute   = self.confirmed_rename,
-            on_organize_preview = self.preview_organize,
-            on_organize_execute = self.confirmed_organize,
-            on_copy_preview     = self.preview_copy,
-            on_copy_execute     = self.confirmed_copy,
-            on_move_preview     = self.preview_move,
-            on_move_execute     = self.confirmed_move,
-            on_run_search       = self.run_search)
+        form_operation = {
+            "rename_preview"   : self.preview_rename,
+            "rename_execute"   : self.confirmed_rename,
+            "organize_preview" : self.preview_organize,
+            "organize_execute" : self.confirmed_organize,
+            "copy_preview"     : self.preview_copy,
+            "copy_execute"     : self.confirmed_copy,
+            "move_preview"     : self.preview_move,
+            "move_execute"     : self.confirmed_move,
+            "run_search"       : self.run_search }
+        
+        self.form = Form(self.main_frame, form_operation)
 
         self.source_file = self.form.source_file
         
