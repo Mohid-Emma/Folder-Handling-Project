@@ -2,31 +2,15 @@
 import customtkinter as ctk
 import config.theme  as theme
 import config.icon   as icon
-
 from utils    import icon_image_convert
-from frontend import Title, Form, View, Status, Dialog
 
 
 class MainWindow(ctk.CTk):
-    def __init__(self, operation):
+    def __init__(self, display, operation):
         super().__init__(fg_color=theme.background)
-        
 
-        self.on_rename_preview   = operation["rename_preview"]
-        self.on_rename_execute   = operation["rename_execute"]
-
-        self.on_organize_preview = operation["organize_preview"]
-        self.on_organize_execute = operation["organize_execute"] 
-        
-        self.on_copy_preview     = operation["copy_preview"]
-        self.on_copy_execute     = operation["copy_execute"] 
-        
-        self.on_move_preview     = operation["move_preview"]
-        self.on_move_execute     = operation["move_execute"]          
-        
-        self.on_run_search       = operation["run_search"]  
-        self.on_result           = operation["result"]
-
+        self.display   = display
+        self.operation = operation
         self.current_mode = "rename"
 
 
@@ -252,7 +236,7 @@ class MainWindow(ctk.CTk):
         self.main_frame.grid_columnconfigure(1, weight=6, uniform="content")
         self.main_frame.grid_columnconfigure(2, weight=3, uniform="content")
 
-        self.m_title = Title(self.main_frame)
+        self.m_title = self.display["title"](self.main_frame)
         self.m_title.grid(row=0, column=0, columnspan=2, padx=(18, 10), pady=(20, 8), sticky="news",
         )
 
@@ -268,7 +252,7 @@ class MainWindow(ctk.CTk):
             "move_execute"     : self.confirmed_move,
             "run_search"       : self.run_search }
         
-        self.form = Form(self.main_frame, form_operation)
+        self.form = self.display["form"](self.main_frame, form_operation)
 
         self.source_file = self.form.source_file
         
@@ -277,11 +261,11 @@ class MainWindow(ctk.CTk):
         self.form.grid_propagate(False)
 
         # Preview panel
-        self.view = View(self.main_frame)
+        self.view = self.display["view"](self.main_frame)
         self.view.grid(row=1, column=1, padx=8, pady=(8, 20), sticky="news")
 
         # Status / summary panel
-        self.status = Status(self.main_frame)
+        self.status = self.display["status"](self.main_frame)
         self.status.grid(row=0, rowspan=2, column=2, padx=(8, 18), pady=(20, 20), sticky="news")
 
     # =============================================================
@@ -302,8 +286,7 @@ class MainWindow(ctk.CTk):
 
         if rename_data is None:
             return
-
-        self.on_rename_preview(rename_data)
+        self.operation["rename_preview"](rename_data)
 
     def confirmed_rename(self):
         rename_data = self.form.call_back_rename()
@@ -311,15 +294,11 @@ class MainWindow(ctk.CTk):
         if rename_data is None:
             return
 
-        dialog = Dialog(self)
-        self.wait_window(dialog)
-
-        if dialog.get_result():
-            rename_plan = self.on_rename_execute()
-            if not rename_plan:
-                return
-
-            self.on_result(rename_plan)
+        rename_plan = self.operation["rename_execute"]()
+        if not rename_plan:
+            return
+        
+        self.operation["result"](rename_plan)
 
     # =============================================================
     # Organize Workflow 
@@ -331,24 +310,19 @@ class MainWindow(ctk.CTk):
         if organize_data is None:
             return
 
-        self.on_organize_preview(organize_data)
+        self.operation["organize_preview"](organize_data)
 
     def confirmed_organize(self):
         organize_data = self.form.call_back_organize()
 
         if organize_data is None:
             return
-
-        dialog = Dialog(self)
-        self.wait_window(dialog)
-
-        if dialog.get_result():
-            organize_plan = self.on_organize_execute()
-
-            if not organize_plan:
-                return
-
-            self.on_result(organize_plan)
+        
+        organize_plan = self.operation["organize_execute"]()
+        if not organize_plan:
+            return
+        
+        self.operation["result"](organize_plan)
 
     # =============================================================
     # Copy Workflow 
@@ -360,24 +334,19 @@ class MainWindow(ctk.CTk):
         if copy_data is None:
             return
 
-        self.on_copy_preview(copy_data)
+        self.operation["copy_preview"](copy_data)
 
     def confirmed_copy(self):
         copy_data = self.form.call_back_copy()
 
         if copy_data is None:
             return
+        
+        copy_plan = self.operation["copy_execute"]()
+        if not copy_plan:
+            return
 
-        dialog = Dialog(self)
-        self.wait_window(dialog)
-
-        if dialog.get_result():
-            copy_plan = self.on_copy_execute()
-
-            if not copy_plan:
-                return
-
-            self.on_result(copy_plan)
+        self.operation["result"](copy_plan)
 
 
     # =============================================================
@@ -390,24 +359,19 @@ class MainWindow(ctk.CTk):
         if move_data is None:
             return
 
-        self.on_move_preview(move_data)
+        self.operation["move_preview"](move_data)
 
     def confirmed_move(self):
         move_data = self.form.call_back_move()
 
         if move_data is None:
             return
+    
+        move_plan = self.operation["move_execute"]()
+        if not move_plan:
+            return
 
-        dialog = Dialog(self)
-        self.wait_window(dialog)
-
-        if dialog.get_result():
-            move_plan = self.on_move_execute()
-
-            if not move_plan:
-                return
-
-            self.on_result(move_plan)
+        self.operation["result"](move_plan)
 
     # =============================================================
     # Search Workflow 
@@ -419,7 +383,7 @@ class MainWindow(ctk.CTk):
         if search_data is None:
             return
 
-        self.on_run_search(search_data)
+        self.operation["run_search"](search_data)
 
     # =============================================================
     # Display

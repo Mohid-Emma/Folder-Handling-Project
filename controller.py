@@ -2,16 +2,14 @@
 
 from tkinter  import messagebox
 from frontend import MainWindow
+import config.theme as theme
+
 
 
 class App:
-    def __init__(self, factory):
-        self.rename_factory   = factory["rename"]
-        self.organize_factory = factory["organize"]
-        self.copy_factory     = factory["copy"]
-        self.move_factory     = factory["move"]
-        self.search_factory   = factory["search"]
-
+    def __init__(self, display: dict, factory: dict) -> None:
+        
+        self.factory  = factory
         self.rename   = None
         self.organize = None
         self.copy     = None
@@ -20,8 +18,6 @@ class App:
 
         self.current_operation = "rename"
         self.current_plan = []
-
-
         
         operation = {
             "rename_preview"   : self.rename_preview,
@@ -35,23 +31,23 @@ class App:
             "run_search"       : self.run_search,
             "result"           : self.show_result,
         }
-        self.main_window = MainWindow(operation)
+        self.main_window = MainWindow(display, operation)
     # --------------------------------------------------
     # RENAME: callbacks used by the existing MainWindow
     # --------------------------------------------------
 
 
-    def rename_preview(self, rename_data):
+    def rename_preview(self, rename_data: dict) -> None:
 
         try:
-            self.rename = self.rename_factory(rename_data)
+            self.rename = self.factory["rename"](rename_data)
             return self._preview(self.rename, "rename")
 
         except (OSError, ValueError) as error:
             self._error("Rename preview failed", error)
             return None
 
-    def execute_rename(self):
+    def execute_rename(self) -> None:
         return self._execute(
             "Rename",
             self.rename,
@@ -59,7 +55,7 @@ class App:
             "This will change the original filenames."
         )
     
-    def show_result(self, plan):
+    def show_result(self, plan: dict) -> None:
         if plan is not None:
             self._display(plan)
 
@@ -67,17 +63,17 @@ class App:
     # ORGANIZE
     # --------------------------------------------------
 
-    def preview_organize(self, organize_data):
+    def preview_organize(self, organize_data: dict) -> None:
 
         try:
-            self.organize = self.organize_factory(organize_data)
+            self.organize = self.factory["organize"](organize_data)
             return self._preview(self.organize, "organize")
 
         except (OSError, ValueError) as error:
             self._error("Organize preview failed", error)
             return None
 
-    def execute_organize(self):
+    def execute_organize(self) -> None:
         return self._execute(
             "Organize",
             self.organize,
@@ -88,17 +84,17 @@ class App:
     # COPY
     # --------------------------------------------------
 
-    def preview_copy(self, copy_data):
+    def preview_copy(self, copy_data: dict) -> None:
 
         try:
-            self.copy = self.copy_factory(copy_data)
+            self.copy = self.factory["copy"](copy_data)
             return self._preview(self.copy, "copy")
 
         except (OSError, ValueError) as error:
             self._error("Copy preview failed", error)
             return None
 
-    def execute_copy(self):
+    def execute_copy(self) -> None:
         return self._execute(
             "Copy",
             self.copy,
@@ -110,17 +106,17 @@ class App:
     # MOVE
     # --------------------------------------------------
 
-    def preview_move(self, move_date):
+    def preview_move(self, move_date: dict) -> None:
     
         try:
-            self.move = self.move_factory(move_date)
+            self.move = self.factory["move"](move_date)
             return self._preview(self.move, "move")
 
         except (OSError, ValueError) as error:
             self._error("Move preview failed", error)
             return None
 
-    def execute_move(self):
+    def execute_move(self) -> None:
         return self._execute(
             "Move",
             self.move,
@@ -132,10 +128,10 @@ class App:
     # SEARCH
     # --------------------------------------------------
 
-    def run_search(self, search_data):
+    def run_search(self, search_data: dict) -> None:
 
         try:
-            self.search = self.search_factory(search_data)
+            self.search = self.factory["search"](search_data)
 
             results = self.search.search_files()
             self.current_operation = "search"
@@ -151,14 +147,14 @@ class App:
     # SHARED CONTROLLER WORKFLOW
     # --------------------------------------------------
 
-    def _preview(self, backend, operation):
+    def _preview(self, backend, operation: str) -> list[dict]:
         plan = backend.create_plan()
         self.current_operation = operation
         self._display(plan)
         self._set_status(f"Preview ready: {len(plan)} item(s).")
         return plan
 
-    def _execute(self, title, backend, method, confirmation):
+    def _execute(self, title: str, backend, method: str, confirmation: str) -> list[dict] | None:
         if backend is None or not getattr(backend, "plan", None):
             self._notice(f"Create a {title.lower()} preview first.")
             return None
@@ -205,7 +201,7 @@ class App:
     # UI INTEGRATION
     # --------------------------------------------------
 
-    def _display(self, plan):
+    def _display(self, plan: list[dict]) -> None:
         self.current_plan = plan or []
 
         # Your View should accept a list of dictionaries.
@@ -216,7 +212,7 @@ class App:
         self._update_summary(self._summarize(self.current_plan))
 
     @staticmethod
-    def _summarize(plan):
+    def _summarize(plan: list[dict]) -> dict:
         return {
             "total": len(plan),
             "completed": sum(
@@ -233,7 +229,7 @@ class App:
             ),
         }
     
-    def _update_summary(self, summary):
+    def _update_summary(self, summary: dict) -> None:
         status = self.main_window.status
     
         if hasattr(status, "update_from_result"):
@@ -254,8 +250,7 @@ class App:
             if widget is not None:
                 widget.configure(text=text)
 
-    def _set_status(self, message):
-        import config.theme as theme
+    def _set_status(self, message: str) -> None:
 
         for attribute in ("status_label", "header_status_label"):
             widget = getattr(self.main_window, attribute, None)
@@ -269,7 +264,7 @@ class App:
         if status is not None and hasattr(status, "set_status"):
             status.set_status(message, theme.info)
 
-    def _notice(self, message):
+    def _notice(self, message: str) -> None:
         messagebox.showinfo(
             "File & Folder Manager",
             message,
@@ -277,8 +272,7 @@ class App:
         )
         return None
 
-    def _error(self, title, error):
-        import config.theme as theme
+    def _error(self, title: str, error: str) -> None:
 
         message = str(error)
         widget = getattr(self.main_window, "status_label", None)
@@ -294,5 +288,5 @@ class App:
         )
         return None
 
-    def run(self):
+    def run(self) -> None:
         self.main_window.mainloop()
