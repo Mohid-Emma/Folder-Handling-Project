@@ -6,7 +6,7 @@ from   tkinter       import filedialog, messagebox
 
 
 class _SourceFolder:
-    def __init__(self, entry : ctk.CTkEntry): 
+    def __init__(self, entry : ctk.CTkEntry) -> None: 
         self.entry = entry
 
     def get_folder_path(self) -> str | None:
@@ -78,8 +78,8 @@ class Form(ctk.CTkFrame):
         modes = {
             "rename"  : self._build_rename,
             "organize": self._build_organize,
-            "move"    : self._build_move,
             "copy"    : self._build_copy,
+            "move"    : self._build_move,
             "search"  : self._build_search,
         }
 
@@ -308,12 +308,12 @@ class Form(ctk.CTkFrame):
             messagebox.showerror("Invalid settings", "Start Number must be a non-negative integer.", parent=self)
             return None
         rename_data = {
-                    "folder"        : folder,
-                    "extension"     : self.extension_var.get(),
-                    "pattern"       : pattern,
-                    "quality"       : self.quality_var.get(),
-                    "start_number"  : start_number,
-                    "number_format" : self.number_format_var.get()
+            "folder"        : folder,
+            "extension"     : self.extension_var.get(),
+            "pattern"       : pattern,
+            "quality"       : self.quality_var.get(),
+            "start_number"  : start_number,
+            "number_format" : self.number_format_var.get()
                 }
         return rename_data
 
@@ -327,10 +327,10 @@ class Form(ctk.CTkFrame):
             return
         
         organize_data = {
-                    "folder"      : folder,
-                    "destination" : destination,
-                    "organize_by" : self.organize_by.get(),
-                    "recursive"   : self.org_recursive.get()
+            "folder"      : folder,
+            "destination" : destination,
+            "organize_by" : self.organize_by.get(),
+            "recursive"   : self.org_recursive.get()
                 }
         return organize_data
 
@@ -344,11 +344,11 @@ class Form(ctk.CTkFrame):
             return
         
         copy_data = {
-                    "folder"         : folder,
-                    "destination"    : destination,
-                    "recursive"      : self.copy_recursive.get(),
-                    "keep_structure" : self.copy_keep_structure.get(),
-                    "overwrite"      : self.copy_overwrite.get()
+            "folder"         : folder,
+            "destination"    : destination,
+            "recursive"      : self.copy_recursive.get(),
+            "keep_structure" : self.copy_keep_structure.get(),
+            "overwrite"      : self.copy_overwrite.get()
                 }
         return copy_data
 
@@ -362,10 +362,10 @@ class Form(ctk.CTkFrame):
             return
         
         move_data = {
-                    "folder"         : folder,
-                    "destination"    : destination,
-                    "recursive"      : self.move_recursive.get(),
-                    "keep_structure" : self.move_keep_structure.get()
+            "folder"         : folder,
+            "destination"    : destination,
+            "recursive"      : self.move_recursive.get(),
+            "keep_structure" : self.move_keep_structure.get()
                 }
         return move_data
 
@@ -375,13 +375,13 @@ class Form(ctk.CTkFrame):
             return
                 
         search_data = {
-                    "folder"          : folder,
-                    "query"           : self.search_query.get(),
-                    "file_type"       : self.search_by.get(),
-                    "recursive"       : self.search_recursive.get(),
-                    "case_sensitive"  : self.case_sensitive.get(),
-                    "search_contents" : self.search_contents.get(),
-                    "modified_within" : self.modified_within
+            "folder"          : folder,
+            "query"           : self.search_query.get(),
+            "file_type"       : self.search_by.get(),
+            "recursive"       : self.search_recursive.get(),
+            "case_sensitive"  : self.case_sensitive.get(),
+            "search_contents" : self.search_contents.get(),
+            "modified_within" : self.modified_within
                 }
         return search_data
 

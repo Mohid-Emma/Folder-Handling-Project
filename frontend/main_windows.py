@@ -2,16 +2,18 @@
 import customtkinter as ctk
 import config.theme  as theme
 import config.icon   as icon
-from utils    import icon_image_convert
-
+from   typing import Callable
+from   utils  import icon_image_convert
 
 class MainWindow(ctk.CTk):
-    def __init__(self, display, operation):
+    def __init__(self, ui_compounds: dict, operation: dict) -> None:
         super().__init__(fg_color=theme.background)
 
-        self.display   = display
-        self.operation = operation
-        self.current_mode = "rename"
+        self.ui_compounds     = ui_compounds
+        self.operation        = operation
+        self.current_mode     = "rename"
+        self.current_callback = None
+
 
 
         self.title("File & Folder Manager")
@@ -32,7 +34,7 @@ class MainWindow(ctk.CTk):
     # LAYOUT
     # =============================================================
 
-    def create_layout(self):
+    def create_layout(self) -> None:
         self.grid_rowconfigure(0, weight=0)   # Header
         self.grid_rowconfigure(1, weight=1)   # Body
         self.grid_rowconfigure(2, weight=0)   # Footer
@@ -41,7 +43,7 @@ class MainWindow(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)  # Main
         self.grid_propagate(False)
 
-    def create_frame(self):
+    def create_frame(self) -> None:
         # Header
         self.header_frame = ctk.CTkFrame(
             self,
@@ -90,7 +92,7 @@ class MainWindow(ctk.CTk):
     # HEADER
     # =============================================================
 
-    def create_header(self):
+    def create_header(self) -> None:
         self.header_frame.grid_columnconfigure(0, weight=1)
         self.header_frame.grid_columnconfigure(1, weight=0)
 
@@ -109,13 +111,7 @@ class MainWindow(ctk.CTk):
             font=("Roboto", 24, "bold"),
             text_color=theme.text_primary,
         )
-        self.header_title_label.grid(
-            row=0,
-            column=0,
-            padx=25,
-            pady=17,
-            sticky="ew",
-        )
+        self.header_title_label.grid(row=0, column=0, padx=25, pady=17, sticky="ew" )
 
         self.header_status_label = ctk.CTkLabel(
             self.header_frame,
@@ -123,19 +119,13 @@ class MainWindow(ctk.CTk):
             font=("Roboto", 14, "bold"),
             text_color=theme.text_secondary,
         )
-        self.header_status_label.grid(
-            row=0,
-            column=1,
-            padx=25,
-            pady=17,
-            sticky="e",
-        )
+        self.header_status_label.grid(row=0, column=1, padx=25, pady=17, sticky="e" )
 
     # =============================================================
     # SIDEBAR
     # =============================================================
 
-    def create_sidebar(self):
+    def create_sidebar(self) -> None:
         self.side_bar_frame.grid_columnconfigure(0, weight=1)
 
         title_label = ctk.CTkLabel(
@@ -145,13 +135,7 @@ class MainWindow(ctk.CTk):
             anchor="w",
             text_color=theme.text_muted,
         )
-        title_label.grid(
-            row=0,
-            column=0,
-            padx=25,
-            pady=(28, 12),
-            sticky="ew",
-        )
+        title_label.grid(row=0, column=0, padx=25, pady=(28, 12), sticky="ew" )
 
         self.rename_btn = self.create_button(
             self.side_bar_frame, icon.rename_fill, "Rename",
@@ -174,7 +158,7 @@ class MainWindow(ctk.CTk):
             lambda: self.change_tool("search"), 5
         )
 
-    def change_tool(self, current_mode):
+    def change_tool(self, current_mode: str) -> None:
         self.current_mode = current_mode
 
         modes = {
@@ -201,8 +185,10 @@ class MainWindow(ctk.CTk):
         self.form.change_form(current_mode)
         self.view.change_view(current_mode)
         self.status.change_status(current_mode)
+    
+        self.current_callback = None
 
-    def create_button(self, parent, icon_name, text, command, row, active=False):
+    def create_button(self, parent: ctk.CTkFrame, icon_name: str, text: str, command: Callable[[str], None], row: int, active: bool=False) -> ctk.CTkButton:
         fg_color = theme.action if active else theme.transparent
         hover_color = theme.action_hover if active else theme.action_disable_hover
 
@@ -228,7 +214,7 @@ class MainWindow(ctk.CTk):
     # MAIN CONTENT
     # =============================================================
 
-    def create_main_content(self):
+    def create_main_content(self) -> None:
         self.main_frame.grid_rowconfigure(0, weight=0)
         self.main_frame.grid_rowconfigure(1, weight=1)
 
@@ -236,23 +222,22 @@ class MainWindow(ctk.CTk):
         self.main_frame.grid_columnconfigure(1, weight=6, uniform="content")
         self.main_frame.grid_columnconfigure(2, weight=3, uniform="content")
 
-        self.m_title = self.display["title"](self.main_frame)
-        self.m_title.grid(row=0, column=0, columnspan=2, padx=(18, 10), pady=(20, 8), sticky="news",
-        )
+        self.m_title = self.ui_compounds["title"](self.main_frame)
+        self.m_title.grid(row=0, column=0, columnspan=2, padx=(18, 10), pady=(20, 8), sticky="news")
 
         # Form/settings panel
         form_operation = {
-            "rename_preview"   : self.preview_rename,
-            "rename_execute"   : self.confirmed_rename,
-            "organize_preview" : self.preview_organize,
-            "organize_execute" : self.confirmed_organize,
-            "copy_preview"     : self.preview_copy,
-            "copy_execute"     : self.confirmed_copy,
-            "move_preview"     : self.preview_move,
-            "move_execute"     : self.confirmed_move,
-            "run_search"       : self.run_search }
+            "rename_preview"   : lambda: self.preview("rename"),
+            "rename_execute"   : lambda: self.execute("rename"),
+            "organize_preview" : lambda: self.preview("organize"),
+            "organize_execute" : lambda: self.execute("organize"),
+            "copy_preview"     : lambda: self.preview("copy"),
+            "copy_execute"     : lambda: self.execute("copy"),
+            "move_preview"     : lambda: self.preview("move"),
+            "move_execute"     : lambda: self.execute("move"),
+            "run_search"       : lambda: self.preview("search"),}
         
-        self.form = self.display["form"](self.main_frame, form_operation)
+        self.form = self.ui_compounds["form"](self.main_frame, form_operation)
 
         self.source_file = self.form.source_file
         
@@ -261,134 +246,62 @@ class MainWindow(ctk.CTk):
         self.form.grid_propagate(False)
 
         # Preview panel
-        self.view = self.display["view"](self.main_frame)
+        self.view = self.ui_compounds["view"](self.main_frame)
         self.view.grid(row=1, column=1, padx=8, pady=(8, 20), sticky="news")
 
         # Status / summary panel
-        self.status = self.display["status"](self.main_frame)
+        self.status = self.ui_compounds["status"](self.main_frame)
         self.status.grid(row=0, rowspan=2, column=2, padx=(8, 18), pady=(20, 20), sticky="news")
 
     # =============================================================
     # FOOTER
     # =============================================================
 
-    def create_footer(self):
+    def create_footer(self) -> None:
         self.footer_frame.grid_columnconfigure(0, weight=1)
         self.footer_frame.grid_columnconfigure(1, weight=0)
 
-
     # =============================================================
-    # Rename Workfolw 
+    # Preview Workfolw 
     # =============================================================
 
-    def preview_rename(self):
-        rename_data = self.form.call_back_rename()
+    def preview(self, current_mode: str) -> None:
+        self.current_callback = None
 
-        if rename_data is None:
-            return
-        self.operation["rename_preview"](rename_data)
+        mode = {
+            "rename"  : self.form.call_back_rename,
+            "organize": self.form.call_back_organize,
+            "copy"    : self.form.call_back_copy,
+            "move"    : self.form.call_back_move,
+            "search"  : self.form.call_back_search,
+                }
+        for operation, form in mode.items():
+            if operation == current_mode:
+                self.current_callback = form()
 
-    def confirmed_rename(self):
-        rename_data = self.form.call_back_rename()
-
-        if rename_data is None:
-            return
-
-        rename_plan = self.operation["rename_execute"]()
-        if not rename_plan:
+        if self.current_callback is None:
             return
         
-        self.operation["result"](rename_plan)
+        self.operation[f"{current_mode}_preview"](self.current_callback)
 
     # =============================================================
-    # Organize Workflow 
+    # Execute Workfolw 
     # =============================================================
 
-    def preview_organize(self):
-        organize_data = self.form.call_back_organize()
-
-        if organize_data is None:
-            return
-
-        self.operation["organize_preview"](organize_data)
-
-    def confirmed_organize(self):
-        organize_data = self.form.call_back_organize()
-
-        if organize_data is None:
+    def execute(self, current_mode: str) -> None:
+        
+        if self.current_callback is None:
             return
         
-        organize_plan = self.operation["organize_execute"]()
-        if not organize_plan:
+        plan = self.operation[f"{current_mode}_execute"]()
+        if not plan:
             return
         
-        self.operation["result"](organize_plan)
-
-    # =============================================================
-    # Copy Workflow 
-    # =============================================================
-
-    def preview_copy(self):
-        copy_data = self.form.call_back_copy()
-
-        if copy_data is None:
-            return
-
-        self.operation["copy_preview"](copy_data)
-
-    def confirmed_copy(self):
-        copy_data = self.form.call_back_copy()
-
-        if copy_data is None:
-            return
-        
-        copy_plan = self.operation["copy_execute"]()
-        if not copy_plan:
-            return
-
-        self.operation["result"](copy_plan)
-
-
-    # =============================================================
-    # Move Workflow 
-    # =============================================================
-
-    def preview_move(self):
-        move_data = self.form.call_back_move()
-
-        if move_data is None:
-            return
-
-        self.operation["move_preview"](move_data)
-
-    def confirmed_move(self):
-        move_data = self.form.call_back_move()
-
-        if move_data is None:
-            return
-    
-        move_plan = self.operation["move_execute"]()
-        if not move_plan:
-            return
-
-        self.operation["result"](move_plan)
-
-    # =============================================================
-    # Search Workflow 
-    # =============================================================
-
-    def run_search(self):
-        search_data = self.form.call_back_search()
-
-        if search_data is None:
-            return
-
-        self.operation["run_search"](search_data)
+        self.operation["result"](plan)
 
     # =============================================================
     # Display
     # =============================================================
 
-    def show_preview(self, plan):
+    def show_preview(self, plan: str) -> None:
         self.view.display_card(plan)
-

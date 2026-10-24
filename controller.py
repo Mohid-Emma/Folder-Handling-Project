@@ -2,14 +2,16 @@
 
 from tkinter  import messagebox
 from frontend import MainWindow
+from collections.abc import Callable
+from typing   import Any
 import config.theme as theme
 
 
 
 class App:
-    def __init__(self, display: dict, factory: dict) -> None:
+    def __init__(self, main_window: MainWindow, ui_compounds: dict[str, Callable[..., Any]], factories: dict[str, Callable[..., Any]]) -> None:
         
-        self.factory  = factory
+        self.factories  = factories
         self.rename   = None
         self.organize = None
         self.copy     = None
@@ -28,19 +30,19 @@ class App:
             "copy_execute"     : self.execute_copy,
             "move_preview"     : self.preview_move,
             "move_execute"     : self.execute_move,
-            "run_search"       : self.run_search,
+            "search_preview"   : self.run_search,
             "result"           : self.show_result,
         }
-        self.main_window = MainWindow(display, operation)
+        self.main_window = main_window(ui_compounds, operation)
     # --------------------------------------------------
     # RENAME: callbacks used by the existing MainWindow
     # --------------------------------------------------
 
 
-    def rename_preview(self, rename_data: dict) -> None:
+    def rename_preview(self, rename_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
 
         try:
-            self.rename = self.factory["rename"](rename_data)
+            self.rename = self.factories["rename"](rename_data)
             return self._preview(self.rename, "rename")
 
         except (OSError, ValueError) as error:
@@ -55,7 +57,7 @@ class App:
             "This will change the original filenames."
         )
     
-    def show_result(self, plan: dict) -> None:
+    def show_result(self, plan: dict[str, Callable[..., Any]]) -> None:
         if plan is not None:
             self._display(plan)
 
@@ -63,10 +65,10 @@ class App:
     # ORGANIZE
     # --------------------------------------------------
 
-    def preview_organize(self, organize_data: dict) -> None:
+    def preview_organize(self, organize_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
 
         try:
-            self.organize = self.factory["organize"](organize_data)
+            self.organize = self.factories["organize"](organize_data)
             return self._preview(self.organize, "organize")
 
         except (OSError, ValueError) as error:
@@ -84,10 +86,10 @@ class App:
     # COPY
     # --------------------------------------------------
 
-    def preview_copy(self, copy_data: dict) -> None:
+    def preview_copy(self, copy_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
 
         try:
-            self.copy = self.factory["copy"](copy_data)
+            self.copy = self.factories["copy"](copy_data)
             return self._preview(self.copy, "copy")
 
         except (OSError, ValueError) as error:
@@ -106,10 +108,10 @@ class App:
     # MOVE
     # --------------------------------------------------
 
-    def preview_move(self, move_date: dict) -> None:
+    def preview_move(self, move_date: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
     
         try:
-            self.move = self.factory["move"](move_date)
+            self.move = self.factories["move"](move_date)
             return self._preview(self.move, "move")
 
         except (OSError, ValueError) as error:
@@ -128,10 +130,10 @@ class App:
     # SEARCH
     # --------------------------------------------------
 
-    def run_search(self, search_data: dict) -> None:
+    def run_search(self, search_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
 
         try:
-            self.search = self.factory["search"](search_data)
+            self.search = self.factories["search"](search_data)
 
             results = self.search.search_files()
             self.current_operation = "search"
@@ -147,14 +149,14 @@ class App:
     # SHARED CONTROLLER WORKFLOW
     # --------------------------------------------------
 
-    def _preview(self, backend, operation: str) -> list[dict]:
+    def _preview(self, backend: Callable[..., Any], operation: str) -> list[dict[str, Callable[..., Any]]]:
         plan = backend.create_plan()
         self.current_operation = operation
         self._display(plan)
         self._set_status(f"Preview ready: {len(plan)} item(s).")
         return plan
 
-    def _execute(self, title: str, backend, method: str, confirmation: str) -> list[dict] | None:
+    def _execute(self, title: str, backend: Callable[..., Any], method: str, confirmation: str) -> list[dict[str, None]] | None:
         if backend is None or not getattr(backend, "plan", None):
             self._notice(f"Create a {title.lower()} preview first.")
             return None
@@ -212,24 +214,14 @@ class App:
         self._update_summary(self._summarize(self.current_plan))
 
     @staticmethod
-    def _summarize(plan: list[dict]) -> dict:
+    def _summarize(plan: list[dict[str, None]]) -> dict[str, int]:
         return {
             "total": len(plan),
-            "completed": sum(
-                x.get("status") in {
-                    "Finished", "Organized", "Copied", "Moved"
-                } for x in plan
-            ),
-            "skipped": sum(
-                x.get("status") in {"Skipped", "Exist"}
-                for x in plan
-            ),
-            "failed": sum(
-                x.get("status") == "Error" for x in plan
-            ),
-        }
+            "completed": sum(x.get("status") in {"Finished", "Organized", "Copied", "Moved"} for x in plan),
+            "skipped": sum( x.get("status") in {"Skipped", "Exist"} for x in plan),
+            "failed": sum(x.get("status") == "Error" for x in plan) }
     
-    def _update_summary(self, summary: dict) -> None:
+    def _update_summary(self, summary: dict[str, int]) -> None:
         status = self.main_window.status
     
         if hasattr(status, "update_from_result"):
