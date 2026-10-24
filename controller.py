@@ -11,152 +11,75 @@ import config.theme as theme
 class App:
     def __init__(self, main_window: MainWindow, ui_compounds: dict[str, Callable[..., Any]], factories: dict[str, Callable[..., Any]]) -> None:
         
-        self.factories  = factories
-        self.rename   = None
-        self.organize = None
-        self.copy     = None
-        self.move     = None
-        self.search   = None
+        self.factories    = factories
+        self.current_data = None
 
         self.current_operation = "rename"
         self.current_plan = []
         
         operation = {
-            "rename_preview"   : self.rename_preview,
-            "rename_execute"   : self.execute_rename,
-            "organize_preview" : self.preview_organize,
-            "organize_execute" : self.execute_organize,
-            "copy_preview"     : self.preview_copy,
-            "copy_execute"     : self.execute_copy,
-            "move_preview"     : self.preview_move,
-            "move_execute"     : self.execute_move,
-            "search_preview"   : self.run_search,
-            "result"           : self.show_result,
-        }
+            "preview" : self.preview,
+            "execute" : self.execute,
+            "result"  : self.show_result }
         self.main_window = main_window(ui_compounds, operation)
-    # --------------------------------------------------
-    # RENAME: callbacks used by the existing MainWindow
-    # --------------------------------------------------
 
-
-    def rename_preview(self, rename_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
-
-        try:
-            self.rename = self.factories["rename"](rename_data)
-            return self._preview(self.rename, "rename")
-
-        except (OSError, ValueError) as error:
-            self._error("Rename preview failed", error)
-            return None
-
-    def execute_rename(self) -> None:
-        return self._execute(
-            "Rename",
-            self.rename,
-            "rename_files",
-            "This will change the original filenames."
-        )
-    
-    def show_result(self, plan: dict[str, Callable[..., Any]]) -> None:
-        if plan is not None:
-            self._display(plan)
+        self.execute_data = {
+            "rename":   ("Rename", "rename_files", "This will change the original filenames."),
+            "organize": ("Organize", "organize_files", "Organize the listed files into category folders?"),
+            "copy" :    ("Copy", "copy_files", "Copy the listed files? Originals will remain unchanged."),
+            "move" :    ("Move", "move_files", "Move the listed files? They will leave their original locations.") }
 
     # --------------------------------------------------
-    # ORGANIZE
+    # Preview WorkFlow
     # --------------------------------------------------
 
-    def preview_organize(self, organize_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
+    def preview(self, current_mode: str, data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
 
-        try:
-            self.organize = self.factories["organize"](organize_data)
-            return self._preview(self.organize, "organize")
+        self.current_data = self.factories[current_mode](data)
 
-        except (OSError, ValueError) as error:
-            self._error("Organize preview failed", error)
-            return None
+        if current_mode != "search":
+            try:
+                return self._preview(self.current_data, current_mode)
 
-    def execute_organize(self) -> None:
-        return self._execute(
-            "Organize",
-            self.organize,
-            "organize_files",
-            "Organize the listed files into category folders?" )
+            except (OSError, ValueError) as error:
+                self._error(f"{current_mode.capitalize()} preview failed", error)
+                return None
+        else:
+            try:
+                results = self.current_data.search_files()
+                self.current_operation = "search"
+                self._display(results)
+                self._set_status(f"Search found {len(results)} file(s).")
+                return results
 
-    # --------------------------------------------------
-    # COPY
-    # --------------------------------------------------
-
-    def preview_copy(self, copy_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
-
-        try:
-            self.copy = self.factories["copy"](copy_data)
-            return self._preview(self.copy, "copy")
-
-        except (OSError, ValueError) as error:
-            self._error("Copy preview failed", error)
-            return None
-
-    def execute_copy(self) -> None:
-        return self._execute(
-            "Copy",
-            self.copy,
-            "copy_files",
-            "Copy the listed files? Originals will remain unchanged.",
-        )
-
-    # --------------------------------------------------
-    # MOVE
-    # --------------------------------------------------
-
-    def preview_move(self, move_date: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
-    
-        try:
-            self.move = self.factories["move"](move_date)
-            return self._preview(self.move, "move")
-
-        except (OSError, ValueError) as error:
-            self._error("Move preview failed", error)
-            return None
-
-    def execute_move(self) -> None:
-        return self._execute(
-            "Move",
-            self.move,
-            "move_files",
-            "Move the listed files? They will leave their original locations.",
-        )
-
-    # --------------------------------------------------
-    # SEARCH
-    # --------------------------------------------------
-
-    def run_search(self, search_data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
-
-        try:
-            self.search = self.factories["search"](search_data)
-
-            results = self.search.search_files()
-            self.current_operation = "search"
-            self._display(results)
-            self._set_status(f"Search found {len(results)} file(s).")
-            return results
-
-        except (OSError, ValueError) as error:
-            self._error("Search failed", error)
-            return None
-
-    # --------------------------------------------------
-    # SHARED CONTROLLER WORKFLOW
-    # --------------------------------------------------
-
+            except (OSError, ValueError) as error:
+                self._error("Search failed", error)
+                return None
+            
     def _preview(self, backend: Callable[..., Any], operation: str) -> list[dict[str, Callable[..., Any]]]:
         plan = backend.create_plan()
         self.current_operation = operation
         self._display(plan)
         self._set_status(f"Preview ready: {len(plan)} item(s).")
-        return plan
+        return plan    
+    # --------------------------------------------------
+    # Execute WorkFlow
+    # --------------------------------------------------
 
-    def _execute(self, title: str, backend: Callable[..., Any], method: str, confirmation: str) -> list[dict[str, None]] | None:
+    def execute(self, current_mode) -> None:
+        mode = {
+            "rename"  : lambda: self._execute("rename"),
+            "organize": lambda: self._execute("organize"),
+            "copy"    : lambda: self._execute("copy"),
+            "move"    : lambda: self._execute("move") }
+        for operation, form in mode.items():
+            if operation == current_mode:
+                self.current_callback = form()
+
+    def _execute(self, mode)-> list[dict[str, None]] | None:
+
+        title, method, confirmation = self.execute_data[mode]
+        backend = self.current_data
         if backend is None or not getattr(backend, "plan", None):
             self._notice(f"Create a {title.lower()} preview first.")
             return None
@@ -171,8 +94,7 @@ class App:
         confirmed = messagebox.askyesno(
             f"Confirm {title}",
             f"{confirmation}\n\nEligible items: {ready}",
-            parent=self.main_window,
-        )
+            parent=self.main_window)
 
         if not confirmed:
             return None
@@ -182,23 +104,24 @@ class App:
             self._display(plan)
 
             failed = sum(x["status"] == "Error" for x in plan)
-            completed = sum(
-                x["status"] in {
-                    "Organized", "Copied", "Moved", "Finished"
-                }
-                for x in plan
-            )
+            completed = sum(x["status"] in {"Organized", "Copied", "Moved", "Finished"}
+                        for x in plan)
 
-            self._set_status(
-                f"{title}: {completed} completed, {failed} failed."
-            )
+            self._set_status(f"{title}: {completed} completed, {failed} failed.")
             return plan
 
         except OSError as error:
             self._display(backend.plan)
             self._error(f"{title} failed", error)
             return backend.plan
-
+    # --------------------------------------------------
+    # Display Result
+    # --------------------------------------------------
+    
+    def show_result(self, plan: dict[str, Callable[..., Any]]) -> None:
+        if plan is not None:
+            self._display(plan)
+            
     # --------------------------------------------------
     # UI INTEGRATION
     # --------------------------------------------------
@@ -229,13 +152,10 @@ class App:
     
         # Keep the existing footer in sync during the transition.
         labels = {
-            "status_total": f"Total: {summary.get('total', 0)}",
-            "status_renamed": (
-                f"Completed: {summary.get('completed')}"
-            ),
-            "status_skipped": f"Skipped: {summary.get('skipped', 0)}",
-            "status_failed": f"Failed: {summary.get('failed', 0)}",
-        }
+        "status_total"  : f"Total: {summary.get('total', 0)}",
+        "status_renamed": (f"Completed: {summary.get('completed')}"),
+        "status_skipped": f"Skipped: {summary.get('skipped', 0)}",
+        "status_failed" : f"Failed: {summary.get('failed', 0)}"}
     
         for attribute, text in labels.items():
             widget = getattr(self.main_window, attribute, None)
@@ -249,8 +169,7 @@ class App:
             if widget is not None:
                 widget.configure(
                     text=message,
-                    text_color=theme.text_secondary,
-                )
+                    text_color=theme.text_secondary)
 
         status = getattr(self.main_window, "status", None)
         if status is not None and hasattr(status, "set_status"):
@@ -260,8 +179,7 @@ class App:
         messagebox.showinfo(
             "File & Folder Manager",
             message,
-            parent=self.main_window,
-        )
+            parent=self.main_window )
         return None
 
     def _error(self, title: str, error: str) -> None:
@@ -272,12 +190,9 @@ class App:
         if widget is not None:
             widget.configure(
                 text=message,
-                text_color=theme.error,
-            )
+                text_color=theme.error )
 
-        messagebox.showerror(
-            title, message, parent=self.main_window
-        )
+        messagebox.showerror(title, message, parent=self.main_window)
         return None
 
     def run(self) -> None:

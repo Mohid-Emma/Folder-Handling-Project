@@ -1,4 +1,5 @@
 # main_windows.py
+
 import customtkinter as ctk
 import config.theme  as theme
 import config.icon   as icon
@@ -282,7 +283,7 @@ class MainWindow(ctk.CTk):
         if self.current_callback is None:
             return
         
-        self.operation[f"{current_mode}_preview"](self.current_callback)
+        self.operation["preview"](current_mode, self.current_callback)
 
     # =============================================================
     # Execute Workfolw 
@@ -293,7 +294,7 @@ class MainWindow(ctk.CTk):
         if self.current_callback is None:
             return
         
-        plan = self.operation[f"{current_mode}_execute"]()
+        plan = self.operation["execute"](current_mode)
         if not plan:
             return
         
