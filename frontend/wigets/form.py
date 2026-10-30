@@ -64,7 +64,6 @@ class Form(ctk.CTkFrame):
         "organize": [(self.organize_by, ["File Type","File Extension","Date Modified"], 5)],
         "search"  : [(self.search_by, ["All Files","Video","Image","Audio","Document","Archive","Other"], 3)] }
 
-        self.change_form("rename")
     
     def change_form(self, mode: str) -> None:
         self._destroy_widgets()
@@ -148,8 +147,12 @@ class Form(ctk.CTkFrame):
             image        = search_icon,
             fg_color     = theme.action, 
             hover_color  = theme.action_hover,
-            command      = self.operation["run_search"]
+            command      = lambda: self.operation["preview"]("search")
             ).grid(row=8, column=0, columnspan=2, padx=(6, 0), sticky="ew")
+
+    # =============================================================
+    # Helper Layout Elements
+    # =============================================================
 
     def _section(self, text: str, row: int) -> None:
         ctk.CTkLabel(
@@ -256,8 +259,6 @@ class Form(ctk.CTkFrame):
                     row=row, column=0, columnspan=2, padx=20, pady=7, sticky="w")
 
     def _button(self, text: str, row: int) -> None:
-        command_preview = self.operation[f"{text.lower()}_preview"]
-        command_execute = self.operation[f"{text.lower()}_execute"]
         buttons = ctk.CTkFrame(
             master   = self, 
             fg_color = "transparent")
@@ -275,7 +276,7 @@ class Form(ctk.CTkFrame):
             border_color = theme.action,
             hover_color  = theme.action_disable_hover, 
             text_color   = theme.text_secondary,
-            command      = command_preview
+            command      = lambda: self.operation["preview"](text.lower())
             ).grid(row=0, column=0, padx=(0, 6), sticky="ew")
 
         execute_icon = icon_image_convert(icon.execute_fill, theme.text_secondary, 25)
@@ -286,7 +287,7 @@ class Form(ctk.CTkFrame):
             image        = execute_icon,
             fg_color     = theme.action, 
             hover_color  = theme.action_hover,
-            command      = command_execute
+            command      = lambda: self.operation["execute"](text.lower())
             ).grid(row=0, column=1, padx=(6, 0), sticky="ew")
 
     def _browse(self, entry: ctk.CTkEntry) -> None:
