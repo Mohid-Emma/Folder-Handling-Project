@@ -13,9 +13,10 @@ class Title(ctk.CTkFrame):
         "search"  : ("Search Files", "Find files and folders by name, type, or content.", "search"),
     }
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: ctk.CTkFrame, current_mode: str, **kwargs) -> None:
         super().__init__(master, fg_color=theme.panel, corner_radius=10, border_width=1, border_color=theme.border, height=105, **kwargs)
-        
+
+        self.current_mode = current_mode
         self.grid_columnconfigure(1, weight=1)
         self.grid_propagate(False)
         
@@ -39,9 +40,9 @@ class Title(ctk.CTkFrame):
             font   = ("Roboto", 14), text_color=theme.text_secondary)
         self.description.grid(row=1, column=1, padx=(0, 18), pady=(0, 20), sticky="ew")
         
-        self.change_title("rename")
+        self.change_title(current_mode)
 
-    def change_title(self, mode):
+    def change_title(self, mode: str) -> None:
         title, description, icon_attr = self.TITLES.get(mode, self.TITLES["rename"])
         self.heading.configure(text=title)
         self.description.configure(text=description)

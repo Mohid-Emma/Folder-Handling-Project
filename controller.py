@@ -14,14 +14,14 @@ class App:
         self.factories    = factories
         self.current_data = None
 
-        self.current_operation = "rename"
+        self.current_mode = "rename"
         self.current_plan = []
         
         operation = {
             "preview" : self.preview,
             "execute" : self.execute,
             "result"  : self.show_result }
-        self.main_window = main_window(ui_compounds, operation)
+        self.main_window = main_window(self.current_mode, ui_compounds, operation)
 
         self.execute_data = {
             "rename":   ("Rename", "rename_files", "This will change the original filenames."),
@@ -47,7 +47,7 @@ class App:
         else:
             try:
                 results = self.current_data.search_files()
-                self.current_operation = "search"
+                self.current_mode = "search"
                 self._display(results)
                 self._set_status(f"Search found {len(results)} file(s).")
                 return results
@@ -58,7 +58,7 @@ class App:
             
     def _preview(self, backend: Callable[..., Any], operation: str) -> list[dict[str, Callable[..., Any]]]:
         plan = backend.create_plan()
-        self.current_operation = operation
+        self.current_mode = operation
         self._display(plan)
         self._set_status(f"Preview ready: {len(plan)} item(s).")
         return plan    

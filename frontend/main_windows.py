@@ -7,12 +7,12 @@ from   typing import Callable
 from   utils  import icon_image_convert
 
 class MainWindow(ctk.CTk):
-    def __init__(self, ui_compounds: dict, operation: dict) -> None:
+    def __init__(self, current_mode: str, ui_compounds: dict, operation: dict) -> None:
         super().__init__(fg_color=theme.background)
 
+        self.current_mode     = current_mode
         self.ui_compounds     = ui_compounds
         self.operation        = operation
-        self.current_mode     = "rename"
         self.current_callback = None
 
 
@@ -209,7 +209,7 @@ class MainWindow(ctk.CTk):
         self.main_frame.grid_columnconfigure(1, weight=6, uniform="content")
         self.main_frame.grid_columnconfigure(2, weight=3, uniform="content")
 
-        self.m_title = self.ui_compounds["title"](self.main_frame)
+        self.m_title = self.ui_compounds["title"](self.main_frame, self.current_mode)
         self.m_title.grid(row=0, column=0, columnspan=2, padx=(18, 10), pady=(20, 8), sticky="news")
 
         # Form/settings panel
@@ -228,11 +228,11 @@ class MainWindow(ctk.CTk):
         self.form.grid_propagate(False)
 
         # Preview panel
-        self.view = self.ui_compounds["view"](self.main_frame)
+        self.view = self.ui_compounds["view"](self.main_frame, self.current_mode)
         self.view.grid(row=1, column=1, padx=8, pady=(8, 20), sticky="news")
 
         # Status / summary panel
-        self.status = self.ui_compounds["status"](self.main_frame)
+        self.status = self.ui_compounds["status"](self.main_frame, self.current_mode)
         self.status.grid(row=0, rowspan=2, column=2, padx=(8, 18), pady=(20, 20), sticky="news")
 
     # =============================================================
