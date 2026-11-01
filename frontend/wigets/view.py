@@ -76,8 +76,6 @@ class View(ctk.CTkFrame):
         self._build_results()
         self._build_footer()
 
-        self.change_view(self.current_mode)
-
     # ==================================================
     # Layout
     # ==================================================

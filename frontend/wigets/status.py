@@ -39,8 +39,7 @@ class Status(ctk.CTkFrame):
                 "search options supported by your settings." )}}
 
     def __init__(self, master:ctk.CTkFrame, current_mode:str, **kwargs):
-        super().__init__(master, width=220, fg_color=theme.panel, corner_radius=10, border_width=1, border_color=theme.border, **kwargs,
-        )
+        super().__init__(master, width=220, fg_color=theme.panel, corner_radius=10, border_width=1, border_color=theme.border, **kwargs)
 
         self.current_mode = current_mode
 

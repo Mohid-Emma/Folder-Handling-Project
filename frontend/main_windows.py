@@ -129,7 +129,7 @@ class MainWindow(ctk.CTk):
 
         self.rename_btn = self.create_button(
             self.side_bar_frame, icon.rename_fill, "Rename",
-            lambda: self.change_tool("rename"), 1, True)
+            lambda: self.change_tool("rename"), 1)
 
         self.organize_btn = self.create_button(
             self.side_bar_frame, icon.organize_fill, "Organize",
@@ -176,9 +176,9 @@ class MainWindow(ctk.CTk):
     
         self.current_callback = None
 
-    def create_button(self, parent: ctk.CTkFrame, icon_name: str, text: str, command: Callable[[str], None], row: int, active: bool=False) -> ctk.CTkButton:
-        fg_color    = theme.action if active else theme.transparent
-        hover_color = theme.action_hover if active else theme.action_disable_hover
+    def create_button(self, parent: ctk.CTkFrame, icon_name: str, text: str, command: Callable[[str], None], row: int) -> ctk.CTkButton:
+        fg_color    = theme.action if text.lower() == self.current_mode else theme.transparent
+        hover_color = theme.action_hover if text.lower() == self.current_mode else theme.action_disable_hover
 
         ctk_icon = icon_image_convert(icon_name, theme.action_hover, 30)
 
@@ -211,6 +211,7 @@ class MainWindow(ctk.CTk):
 
         self.m_title = self.ui_compounds["title"](self.main_frame, self.current_mode)
         self.m_title.grid(row=0, column=0, columnspan=2, padx=(18, 10), pady=(20, 8), sticky="news")
+        self.m_title.change_title(self.current_mode)
 
         # Form/settings panel
 
@@ -219,21 +220,20 @@ class MainWindow(ctk.CTk):
             "execute" : self.execute}
         
         self.form = self.ui_compounds["form"](self.main_frame, form_operation)
-        self.form.change_form("rename")
-
-        self.source_file = self.form.source_file
-        
-        
         self.form.grid(row=1, column=0, padx=(18, 8), pady=(8, 20), sticky="news")
         self.form.grid_propagate(False)
+        self.form.change_form(self.current_mode)
+        self.source_file = self.form.source_file
 
         # Preview panel
         self.view = self.ui_compounds["view"](self.main_frame, self.current_mode)
         self.view.grid(row=1, column=1, padx=8, pady=(8, 20), sticky="news")
+        self.view.change_view(self.current_mode)
 
         # Status / summary panel
         self.status = self.ui_compounds["status"](self.main_frame, self.current_mode)
         self.status.grid(row=0, rowspan=2, column=2, padx=(8, 18), pady=(20, 20), sticky="news")
+        self.status.change_status(self.current_mode)
 
     # =============================================================
     # FOOTER

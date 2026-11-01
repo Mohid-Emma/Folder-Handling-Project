@@ -40,7 +40,6 @@ class Title(ctk.CTkFrame):
             font   = ("Roboto", 14), text_color=theme.text_secondary)
         self.description.grid(row=1, column=1, padx=(0, 18), pady=(0, 20), sticky="ew")
         
-        self.change_title(current_mode)
 
     def change_title(self, mode: str) -> None:
         title, description, icon_attr = self.TITLES.get(mode, self.TITLES["rename"])
