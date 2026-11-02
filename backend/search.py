@@ -2,6 +2,7 @@
 # search.py
 
 from pathlib import Path
+from typing import Any
 from datetime import datetime
 
 
@@ -10,46 +11,34 @@ class Search:
         ".txt", ".md", ".csv", ".json", ".py",
         ".html", ".xml", ".log", ".css", ".js",
         ".yaml", ".yml", ".ini", ".cfg", ".toml",
-        ".sql", ".rtf",
-    }
+        ".sql", ".rtf"}
 
     FILE_TYPES = {
         "all files": None,
-
         "video": {
             ".mp4", ".mkv", ".avi", ".mov", ".wmv",
             ".flv", ".webm", ".m4v", ".mpeg", ".mpg",
-            ".3gp", ".ts", ".mts", ".m2ts", ".vob",
-        },
-
+            ".3gp", ".ts", ".mts", ".m2ts", ".vob" },
         "image": {
             ".jpg", ".jpeg", ".png", ".gif", ".bmp",
             ".webp", ".svg", ".ico", ".tiff", ".tif",
-            ".heic", ".heif", ".avif", ".raw", ".psd",
-        },
-
+            ".heic", ".heif", ".avif", ".raw", ".psd" },
         "audio": {
             ".mp3", ".wav", ".aac", ".flac", ".ogg",
             ".wma", ".m4a", ".opus", ".aiff", ".mid",
-            ".midi", ".amr",
-        },
-
+            ".midi", ".amr" },
         "document": {
             ".pdf", ".doc", ".docx", ".xls", ".xlsx",
             ".ppt", ".pptx", ".txt", ".rtf", ".odt",
             ".ods", ".odp", ".md", ".csv", ".epub",
-            ".json", ".xml",
-        },
-
+            ".json", ".xml" },
         "archive": {
             ".zip", ".rar", ".7z", ".tar", ".gz",
             ".tar.gz", ".tgz", ".bz2", ".tar.bz2",
             ".xz", ".tar.xz", ".lz", ".lzma",
-            ".zst", ".cab", ".iso", ".arj",
-        },
-    }
+            ".zst", ".cab", ".iso", ".arj" }}
 
-    def __init__(self, search_data):
+    def __init__(self, search_data: dict[str, Any]) -> None:
         self.folder = Path(search_data["folder"]).expanduser()
 
         self.query           = search_data["query"]
@@ -70,7 +59,7 @@ class Search:
             for extension in extensions
         }
 
-    def _matches_file_type(self, path):
+    def _matches_file_type(self, path: Path) -> bool:
         file_type = str(self.file_type).strip().casefold()
         filename = path.name.casefold()
 
@@ -101,7 +90,7 @@ class Search:
         # Also allow a custom extension without a leading dot
         return filename.endswith("." + file_type)
 
-    def _matches_content(self, path, query):
+    def _matches_content(self, path: Path, query: str) -> bool | str:
         if not self.search_contents or not query:
             return False
 
@@ -110,11 +99,7 @@ class Search:
             return False
 
         try:
-            with path.open(
-                "r",
-                encoding="utf-8",
-                errors="ignore",
-            ) as file:
+            with path.open("r", encoding="utf-8", errors="ignore") as file:
                 content = file.read(1_000_000)
 
             if not self.case_sensitive:
@@ -125,7 +110,7 @@ class Search:
         except (OSError, UnicodeError):
             return False
 
-    def search_files(self):
+    def create_plan(self) -> list[dict[str, Any]]:
         if not self.folder.is_dir():
             raise NotADirectoryError(self.folder)
 
@@ -139,14 +124,12 @@ class Search:
         if self.modified_within is not None:
             cutoff = (
                 datetime.now().timestamp()
-                - int(self.modified_within) * 86400
-            )
+                - int(self.modified_within) * 86400)
 
         paths = (
             self.folder.rglob("*")
             if self.recursive
-            else self.folder.iterdir()
-        )
+            else self.folder.iterdir())
 
         self.results = []
 
@@ -160,10 +143,8 @@ class Search:
 
                 # Check the filename first.
                 name = (
-                    path.name
-                    if self.case_sensitive
-                    else path.name.casefold()
-                )
+                    path.name if self.case_sensitive
+                    else path.name.casefold())
 
                 matched = not query or query in name
 
@@ -177,10 +158,7 @@ class Search:
                 stat = path.stat()
 
                 # Filter by modification date.
-                if (
-                    cutoff is not None
-                    and stat.st_mtime < cutoff
-                ):
+                if (cutoff is not None and stat.st_mtime < cutoff):
                     continue
 
                 self.results.append({
@@ -191,10 +169,7 @@ class Search:
                     "status": "Found",
                     "message": "",
                     "size": stat.st_size,
-                    "modified": datetime.fromtimestamp(
-                        stat.st_mtime
-                    ),
-                })
+                    "modified": datetime.fromtimestamp(stat.st_mtime)})
 
             except OSError:
                 # Skip files that cannot be accessed or disappear.

@@ -1,15 +1,16 @@
 # controller.py
 
-from tkinter  import messagebox
-from frontend import MainWindow
+from tkinter   import messagebox
+from frontend  import MainWindow
+from typing    import Any
+from protocols import PlanProvider, PlanExecuter, ControllerCallbacks
 from collections.abc import Callable
-from typing   import Any
 import config.theme as theme
 
 
 
 class App:
-    def __init__(self, main_window: MainWindow, ui_compounds: dict[str, Callable[..., Any]], factories: dict[str, Callable[..., Any]]) -> None:
+    def __init__(self, main_window: Callable[..., MainWindow], ui_compounds: dict[str, Any], factories: dict[str, Any]) -> None:
         
         self.factories    = factories
         self.current_data = None
@@ -17,69 +18,64 @@ class App:
         self.current_mode = "rename"
         self.current_plan = []
         
-        operation = {
+        operation: ControllerCallbacks = {
             "preview" : self.preview,
-            "execute" : self.execute,
-            "result"  : self.show_result }
+            "execute" : self.execute }
+ 
         self.main_window = main_window(self.current_mode, ui_compounds, operation)
 
         self.execute_data = {
-            "rename":   ("Rename", "rename_files", "This will change the original filenames."),
-            "organize": ("Organize", "organize_files", "Organize the listed files into category folders?"),
-            "copy" :    ("Copy", "copy_files", "Copy the listed files? Originals will remain unchanged."),
-            "move" :    ("Move", "move_files", "Move the listed files? They will leave their original locations.") }
+            "rename":   ("Rename",   "This will change the original filenames."),
+            "organize": ("Organize", "Organize the listed files into category folders?"),
+            "copy" :    ("Copy",     "Copy the listed files? Originals will remain unchanged."),
+            "move" :    ("Move",     "Move the listed files? They will leave their original locations.") }
 
-    # --------------------------------------------------
+    # =============================================================
     # Preview WorkFlow
-    # --------------------------------------------------
+    # =============================================================
 
-    def preview(self, current_mode: str, data: dict[str, Callable[..., Any]]) -> list[dict[str, Callable[..., Any]]] | None:
+    def preview(self, current_mode: str, data: dict[str, Any]) -> list[dict[str, Any]] | None:
 
         self.current_data = self.factories[current_mode](data)
 
-        if current_mode != "search":
-            try:
-                return self._preview(self.current_data, current_mode)
-
-            except (OSError, ValueError) as error:
+        try:
+            return self._preview(self.current_data, current_mode)
+        
+        except (OSError, ValueError) as error:
+            if current_mode != "search":
                 self._error(f"{current_mode.capitalize()} preview failed", error)
-                return None
-        else:
-            try:
-                results = self.current_data.search_files()
-                self.current_mode = "search"
-                self._display(results)
-                self._set_status(f"Search found {len(results)} file(s).")
-                return results
-
-            except (OSError, ValueError) as error:
+            else:
                 self._error("Search failed", error)
-                return None
+            return None
+
             
-    def _preview(self, backend: Callable[..., Any], operation: str) -> list[dict[str, Callable[..., Any]]]:
+    def _preview(self, backend: PlanProvider, operation: str) -> list[dict[str, Any]]:
         plan = backend.create_plan()
         self.current_mode = operation
+
         self._display(plan)
-        self._set_status(f"Preview ready: {len(plan)} item(s).")
-        return plan    
-    # --------------------------------------------------
+        if operation != "search":
+            self._set_status(f"Preview ready: {len(plan)} item(s).")
+        else:
+            self._set_status(f"Search found {len(plan)} file(s).")
+
+        return plan
+        
+    # =============================================================
     # Execute WorkFlow
-    # --------------------------------------------------
+    # =============================================================
 
-    def execute(self, current_mode) -> None:
-        mode = {
-            "rename"  : lambda: self._execute("rename"),
-            "organize": lambda: self._execute("organize"),
-            "copy"    : lambda: self._execute("copy"),
-            "move"    : lambda: self._execute("move") }
-        for operation, form in mode.items():
-            if operation == current_mode:
-                self.current_callback = form()
+    def execute(self, current_mode: str) -> None:
+        if current_mode not in self.execute_data:
+            self._notice(f"Unsupported operation: {current_mode}")
+            return
+        
+        self._execute(current_mode)
 
-    def _execute(self, mode)-> list[dict[str, None]] | None:
+    def _execute(self, mode: str)-> list[dict[str, Any]] | None:
 
-        title, method, confirmation = self.execute_data[mode]
-        backend = self.current_data
+        title, confirmation = self.execute_data[mode]
+        backend: PlanExecuter = self.current_data
         if backend is None or not getattr(backend, "plan", None):
             self._notice(f"Create a {title.lower()} preview first.")
             return None
@@ -100,7 +96,7 @@ class App:
             return None
 
         try:
-            plan = getattr(backend, method)()
+            plan = backend.execute_plan()
             self._display(plan)
 
             failed = sum(x["status"] == "Error" for x in plan)
@@ -114,19 +110,12 @@ class App:
             self._display(backend.plan)
             self._error(f"{title} failed", error)
             return backend.plan
-    # --------------------------------------------------
-    # Display Result
-    # --------------------------------------------------
-    
-    def show_result(self, plan: dict[str, Callable[..., Any]]) -> None:
-        if plan is not None:
-            self._display(plan)
             
-    # --------------------------------------------------
+    # =============================================================
     # UI INTEGRATION
-    # --------------------------------------------------
+    # =============================================================
 
-    def _display(self, plan: list[dict]) -> None:
+    def _display(self, plan: list[dict[str, Any]]) -> None:
         self.current_plan = plan or []
 
         # Your View should accept a list of dictionaries.
@@ -137,10 +126,10 @@ class App:
         self._update_summary(self._summarize(self.current_plan))
 
     @staticmethod
-    def _summarize(plan: list[dict[str, None]]) -> dict[str, int]:
+    def _summarize(plan: list[dict[str, Any]]) -> dict[str, int]:
         return {
             "total": len(plan),
-            "completed": sum(x.get("status") in {"Finished", "Organized", "Copied", "Moved"} for x in plan),
+            "completed": sum(x.get("status") == "Finished" for x in plan),
             "skipped": sum( x.get("status") in {"Skipped", "Exist"} for x in plan),
             "failed": sum(x.get("status") == "Error" for x in plan) }
     

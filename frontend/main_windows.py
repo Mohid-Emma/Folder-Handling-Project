@@ -3,11 +3,12 @@
 import customtkinter as ctk
 import config.theme  as theme
 import config.icon   as icon
-from   typing import Callable
-from   utils  import icon_image_convert
+from protocols import ControllerCallbacks
+from typing    import Callable
+from utils     import icon_image_convert
 
 class MainWindow(ctk.CTk):
-    def __init__(self, current_mode: str, ui_compounds: dict, operation: dict) -> None:
+    def __init__(self, current_mode: str, ui_compounds: dict, operation: ControllerCallbacks) -> None:
         super().__init__(fg_color=theme.background)
 
         self.current_mode     = current_mode
@@ -275,9 +276,6 @@ class MainWindow(ctk.CTk):
         plan = self.operation["execute"](current_mode)
         if not plan:
             return
-        
-        self.operation["result"](plan)
-
     # =============================================================
     # Display
     # =============================================================

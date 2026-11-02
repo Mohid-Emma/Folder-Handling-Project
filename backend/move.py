@@ -1,35 +1,32 @@
 # move.py
 
 from pathlib import Path
+from typing import Any
 import shutil
 
 
 class Move:
-    def __init__(self, move_date):
+    def __init__(self, move_date: dict[str, Any]) -> None:
         self.folder         = Path(move_date["folder"]).expanduser()
         self.destination    = Path(move_date["destination"]).expanduser()
         self.recursive      = move_date["recursive"]
         self.keep_structure = move_date["keep_structure"]
         self.plan = []
 
-    def create_plan(self):
+    def create_plan(self) -> list[dict[str, Any]]:
         if not self.folder.is_dir():
             raise NotADirectoryError(self.folder)
 
         if (
             self.recursive
             and self.destination.resolve()
-            in self.folder.resolve().parents
-        ):
-            raise ValueError(
-                "Destination cannot be inside the source folder."
-            )
+            in self.folder.resolve().parents):
+            raise ValueError("Destination cannot be inside the source folder.")
 
         paths = (
             self.folder.rglob("*")
             if self.recursive
-            else self.folder.iterdir()
-        )
+            else self.folder.iterdir())
 
         self.plan = []
 
@@ -40,15 +37,13 @@ class Move:
             relative = (
                 source.relative_to(self.folder)
                 if self.keep_structure
-                else Path(source.name)
-            )
+                else Path(source.name))
+            
             destination = self.destination / relative
 
             status = (
-                "Skipped"
-                if source.resolve() == destination.resolve()
-                else "Exist" if destination.exists() else "Ready"
-            )
+                "Skipped" if source.resolve() == destination.resolve()
+                else "Exist" if destination.exists() else "Ready")
 
             self.plan.append({
                 "source": source,
@@ -56,12 +51,11 @@ class Move:
                 "old_name": source.name,
                 "new_name": str(relative),
                 "status": status,
-                "message": "",
-            })
+                "message": ""})
 
         return self.plan
 
-    def move_files(self):
+    def execute_plan(self) -> list[dict[str, Any]]:
         for item in self.plan:
             if item["status"] != "Ready":
                 continue
@@ -69,15 +63,14 @@ class Move:
             try:
                 destination = item["destination"]
                 destination.parent.mkdir(
-                    parents=True, exist_ok=True
-                )
+                    parents=True, exist_ok=True)
 
                 if destination.exists():
                     item["status"] = "Exist"
                     continue
 
                 shutil.move(str(item["source"]), str(destination))
-                item["status"] = "Moved"
+                item["status"] = "Finished"
 
             except OSError as error:
                 item["status"] = "Error"

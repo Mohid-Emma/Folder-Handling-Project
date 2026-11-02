@@ -1,6 +1,7 @@
 # rename.py 
 
 from pathlib import Path
+from typing import Any
 
 
 class Rename:
@@ -9,7 +10,7 @@ class Rename:
         "01 (Two Digits)"    : "02",
         "001 (Three Digits)" : "03" }
     
-    def __init__(self, rename_data):
+    def __init__(self, rename_data: dict[str, Any]) -> None:
         self.folder        = Path(rename_data["folder"]).expanduser()
         self.extension     = rename_data["extension"]
         self.pattern       = rename_data["pattern"]
@@ -21,7 +22,7 @@ class Rename:
         self.file_count   = 0
         self.rename_count = 0
 
-    def create_plan(self):
+    def create_plan(self) -> list[dict[str, Any]]:
         self.rename_count = 0
         self.plan = []
         if not self.folder.is_dir():
@@ -40,11 +41,7 @@ class Rename:
         for number, source in enumerate(files, start=self.start_number):
             if self.pattern:
                 name_pattern = f"{self.pattern}{number}"
-                name = name_pattern.format(
-                    i=number,
-                    number=number,
-                    quality=self.quality,
-                )
+                name = name_pattern.format(i=number, number=number, quality=self.quality)
             else:
                 width = int(self.numberformat[self.number_format])
                 name = f"EP.{number:0{width}d}.v0.{self.quality}"
@@ -71,18 +68,15 @@ class Rename:
         return self.plan
 
 
-    def rename_files(self):
+    def execute_plan(self) -> list[dict[str, Any]]:
         ready = [
             item for item in self.plan
-            if item["status"] == "Ready"
-        ]
+            if item["status"] == "Ready"]
 
         # Detect duplicate destinations.
         destinations = [item["destination"] for item in ready]
         if len(destinations) != len(set(destinations)):
-            raise ValueError(
-                "Multiple files have the same destination name."
-            )
+            raise ValueError("Multiple files have the same destination name.")
 
         staged = []
         self.rename_count = 0
@@ -91,8 +85,7 @@ class Rename:
             # Stage all sources first, allowing safe filename swaps.
             for index, item in enumerate(ready):
                 temp = item["source"].with_name(
-                    f".__rename_temp_{index}_{item['source'].name}"
-                )
+                    f".__rename_temp_{index}_{item['source'].name}")
 
                 if temp.exists():
                     raise FileExistsError(temp)

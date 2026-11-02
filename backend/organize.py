@@ -1,6 +1,7 @@
 # organize.py
 
 from pathlib import Path
+from typing import Any
 import shutil
 
 
@@ -17,7 +18,7 @@ class Organize:
         "Applications": {".exe", ".msi", ".bat"},
     }
 
-    def __init__(self, organize_data):
+    def __init__(self, organize_data: dict[str, Any]) -> None:
         self.folder      = Path(organize_data["folder"]).expanduser()
         self.organize_by = organize_data["organize_by"]
         self.recursive   = organize_data["recursive"]
@@ -26,25 +27,23 @@ class Organize:
 
         self.plan = []
 
-    def get_category(self, file):
+    def get_category(self, file: str) -> str:
         if self.organize_by == "Extension":
             return file.suffix[1:].upper() or "No Extension"
 
         for category, extensions in self.CATEGORIES.items():
             if file.suffix.lower() in extensions:
                 return category
-
         return "Others"
 
-    def create_plan(self):
+    def create_plan(self) -> list[dict[str, Any]]:
         if not self.folder.is_dir():
             raise NotADirectoryError(self.folder)
 
         paths = (
             self.folder.rglob("*")
             if self.recursive
-            else self.folder.iterdir()
-        )
+            else self.folder.iterdir())
 
         self.plan = []
 
@@ -53,9 +52,8 @@ class Organize:
                 continue
 
             category = self.get_category(source)
-            destination = (
-                self.destination / category / source.name
-            )
+            destination = (self.destination / category / source.name)
+
             if source.resolve() == destination.resolve():
                 status = "Skipped"
             elif destination.exists():
@@ -69,20 +67,18 @@ class Organize:
                 "old_name": source.name,
                 "new_name": f"{category}/{source.name}",
                 "status": status,
-                "message": "",
-            })
+                "message": "" })
 
         return self.plan
 
-    def organize_files(self):
+    def execute_plan(self) -> list[dict[str, Any]]:
         for item in self.plan:
             if item["status"] != "Ready":
                 continue
 
             try:
                 item["destination"].parent.mkdir(
-                    parents=True, exist_ok=True
-                )
+                    parents=True, exist_ok=True)
 
                 if item["destination"].exists():
                     item["status"] = "Exist"
@@ -90,9 +86,9 @@ class Organize:
 
                 shutil.move(
                     str(item["source"]),
-                    str(item["destination"]),
-                )
-                item["status"] = "Organized"
+                    str(item["destination"]))
+                
+                item["status"] = "Finished"
 
             except OSError as error:
                 item["status"] = "Error"
