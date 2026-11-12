@@ -314,8 +314,8 @@ class Form(ctk.CTkFrame):
             "pattern"       : pattern,
             "quality"       : self.quality_var.get(),
             "start_number"  : start_number,
-            "number_format" : self.number_format_var.get()
-                }
+            "number_format" : self.number_format_var.get() }
+        
         return rename_data
 
     def call_back_organize(self) -> dict | None:
@@ -331,8 +331,8 @@ class Form(ctk.CTkFrame):
             "folder"      : folder,
             "destination" : destination,
             "organize_by" : self.organize_by.get(),
-            "recursive"   : self.org_recursive.get()
-                }
+            "recursive"   : self.org_recursive.get() }
+        
         return organize_data
 
     def call_back_copy(self) -> dict | None:
@@ -349,8 +349,8 @@ class Form(ctk.CTkFrame):
             "destination"    : destination,
             "recursive"      : self.copy_recursive.get(),
             "keep_structure" : self.copy_keep_structure.get(),
-            "overwrite"      : self.copy_overwrite.get()
-                }
+            "overwrite"      : self.copy_overwrite.get() }
+        
         return copy_data
 
     def call_back_move(self) -> dict | None:
@@ -366,8 +366,8 @@ class Form(ctk.CTkFrame):
             "folder"         : folder,
             "destination"    : destination,
             "recursive"      : self.move_recursive.get(),
-            "keep_structure" : self.move_keep_structure.get()
-                }
+            "keep_structure" : self.move_keep_structure.get() }
+        
         return move_data
 
     def call_back_search(self) -> dict | None:
@@ -382,17 +382,16 @@ class Form(ctk.CTkFrame):
             "recursive"       : self.search_recursive.get(),
             "case_sensitive"  : self.case_sensitive.get(),
             "search_contents" : self.search_contents.get(),
-            "modified_within" : self.modified_within
-                }
+            "modified_within" : self.modified_within }
+        
         return search_data
 
 
     def _destroy_widgets(self) -> None:
+        for var in (self.pattern_var, self.start_var, self.search_query):
+            for mode, cb_name in var.trace_info():
+                var.trace_remove(mode, cb_name)
+
         for widget in self.winfo_children():
             widget.destroy()
-
-
-
-
-
-
+            

@@ -1,7 +1,7 @@
 # main.py
 from controller import App
-from frontend   import MainWindow
-from frontend   import Title, Form, View, Status
+from execution  import ThreadExecutor, ProcessExecutor
+from frontend   import MainWindow, Title, Form, View, Status
 from backend    import Rename, Organize, Copy, Move, Search
 
 ui_compounds = {
@@ -17,12 +17,17 @@ factories = {
     "move"     : Move,
     "search"   : Search }
 
+executor = {
+    "thread"  : ThreadExecutor,
+    "process" : ProcessExecutor}
+
 # Initialization App
 def main() -> None:
     app = App(
         main_window  = MainWindow, 
         ui_compounds = ui_compounds, 
-        factories    = factories)
+        factories    = factories,
+        executor     = executor)
     app.run()
 
 # Initialization The Program

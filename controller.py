@@ -1,28 +1,33 @@
 # controller.py
 
+from collections.abc import Callable
+from protocols import PlanProvider, PlanExecuter, ControllerCallbacks
 from tkinter   import messagebox
 from frontend  import MainWindow
 from typing    import Any
-from protocols import PlanProvider, PlanExecuter, ControllerCallbacks
-from collections.abc import Callable
+from queue     import Queue, Empty
 import config.theme as theme
 
 
 
 class App:
-    def __init__(self, main_window: Callable[..., MainWindow], ui_compounds: dict[str, Any], factories: dict[str, Any]) -> None:
+    def __init__(self, main_window: Callable[..., MainWindow], ui_compounds: dict[str, Any], factories: dict[str, Any], executor: dict[str, Any]) -> None:
         
         self.factories    = factories
-        self.current_data = None
-
         self.current_mode = "rename"
+        self.current_data = None
         self.current_plan = []
+        self.preview_queue = Queue()
+        self.preview_requet_id = 0
+
+        self.executor = executor["thread"](max_workers=1)
         
         operation: ControllerCallbacks = {
             "preview" : self.preview,
             "execute" : self.execute }
  
         self.main_window = main_window(self.current_mode, ui_compounds, operation)
+        self.main_window.after(100, self._check_preview_result)
 
         self.execute_data = {
             "rename":   ("Rename",   "This will change the original filenames."),
@@ -34,33 +39,43 @@ class App:
     # Preview WorkFlow
     # =============================================================
 
-    def preview(self, current_mode: str, data: dict[str, Any]) -> list[dict[str, Any]] | None:
-
+    def preview(self, current_mode: str, data: dict[str, Any]) -> None:
+        self.preview_requet_id += 1
+        requet_id = self.preview_requet_id
         self.current_data = self.factories[current_mode](data)
 
-        try:
-            return self._preview(self.current_data, current_mode)
+        future = self.executor.submit(self.current_data.create_plan)
+
+        future.add_done_callback(
+            lambda result: self.preview_queue.put((result, current_mode, requet_id)))
+
+    def _check_preview_result(self) -> None:
+        while True:
+            try:
+                future, operation, requet_id = self.preview_queue.get_nowait()
+            except Empty:
+                break
+
+            if requet_id != self.preview_requet_id:
+                continue
+
+            try:
+                plan = future.result()
+                self._preview(plan, operation)
+            except Exception as error:
+                self._error("Preview failed", error)
+
+        self.main_window.after(100, self._check_preview_result)
         
-        except (OSError, ValueError) as error:
-            if current_mode != "search":
-                self._error(f"{current_mode.capitalize()} preview failed", error)
-            else:
-                self._error("Search failed", error)
-            return None
-
-            
-    def _preview(self, backend: PlanProvider, operation: str) -> list[dict[str, Any]]:
-        plan = backend.create_plan()
+    def _preview(self, plan: list[dict[str, Any]], operation: str) -> None:
         self.current_mode = operation
-
         self._display(plan)
+        
         if operation != "search":
             self._set_status(f"Preview ready: {len(plan)} item(s).")
         else:
             self._set_status(f"Search found {len(plan)} file(s).")
 
-        return plan
-        
     # =============================================================
     # Execute WorkFlow
     # =============================================================
