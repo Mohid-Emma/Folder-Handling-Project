@@ -1,6 +1,7 @@
 # protocols.py
 
 from typing import Protocol, Any, TypedDict
+from concurrent.futures import Future
 from collections.abc import Callable
 
 
@@ -36,4 +37,20 @@ class PlanExecuter(Protocol):
     plan: list[dict[str, Any]]
 
     def execute_plan(self) -> list[dict[str, Any]]:
+        ...
+
+# =============================================================
+# Executor Protocol
+# =============================================================
+
+class Executor(Protocol):
+
+    def submit(
+        self,
+        function: Callable[..., Any],
+        *args: Any
+    ) -> Future:
+        ...
+
+    def shutdown(self) -> None:
         ...

@@ -21,15 +21,11 @@ executor = {
     "thread"  : ThreadExecutor,
     "process" : ProcessExecutor}
 
-# Initialization App
-def main() -> None:
+# Initialization The Program
+if __name__ == "__main__":
     app = App(
         main_window  = MainWindow, 
         ui_compounds = ui_compounds, 
         factories    = factories,
         executor     = executor)
     app.run()
-
-# Initialization The Program
-if __name__ == "__main__":
-    main()

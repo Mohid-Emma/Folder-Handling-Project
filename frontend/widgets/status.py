@@ -197,7 +197,7 @@ class Status(ctk.CTkFrame):
         if not isinstance(summary, dict):
             return
 
-        total   = summary.get("total",  summary.get("total_files", 0))
+        total   = summary.get("total", 0)
         ready   = summary.get("ready",  summary.get( "renamed", summary.get("copied", summary.get("moved", summary.get("organized", summary.get("found", 0))))))
         exists  = summary.get("exists", summary.get("already_exists", 0))
         skipped = summary.get("skipped", 0)
