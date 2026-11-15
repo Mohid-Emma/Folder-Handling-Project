@@ -1,7 +1,7 @@
 # controller.py
 
 from collections.abc import Callable
-from protocols import PlanProvider, PlanExecuter, ControllerCallbacks, Executor
+from protocols import PlanExecuter, ControllerCallbacks, Executor
 from tkinter   import messagebox
 from frontend  import MainWindow
 from typing    import Any
@@ -16,7 +16,7 @@ class App:
             main_window: Callable[..., MainWindow], 
             ui_compounds: dict[str, Any], 
             factories: dict[str, Any], 
-            executor: dict[str, Executor]) -> None:
+            executor: Executor) -> None:
 
         # Dependency injection
         self.factories = factories
@@ -37,8 +37,7 @@ class App:
         self.execute_queue: Queue = Queue()
 
         # Executors
-        self.thread_executor = executor["thread"](max_workers=4)
-        self.process_executor = executor["process"](max_workers=4)
+        self.executor = executor
         
         operation: ControllerCallbacks = {
             "preview" : self.preview,
@@ -80,7 +79,7 @@ class App:
         try:
             backend = self.factories[current_mode](data)
 
-            future = self.thread_executor.submit(backend.create_plan)
+            future = self.executor.submit(backend.create_plan)
             future.add_done_callback(
                 lambda completed_future: self.preview_queue.put((completed_future, backend, current_mode, request_id)))
             
@@ -134,13 +133,22 @@ class App:
         if self.execution_in_progress:
             self._notice("An operation is already running.")
             return
+
+        if mode != self.current_mode:
+            self._notice(f"Create a {title.lower()} preview first.")
+            return
         
         backend: PlanExecuter = self.current_data
-        plan = backend.plan
 
-        if backend is None or not getattr(backend, "plan", None):
+        if backend is None:
             self._notice(f"Create a {title.lower()} preview first.")
             return None
+
+        plan = getattr(backend, "plan", None)
+
+        if not plan:
+            self._notice(f"No eligible files to {title.lower()}.")
+            return
 
         ready = sum(item["status"] == "Ready" for item in plan)
 
@@ -160,7 +168,7 @@ class App:
         self._set_status(f"{title}: Processing...")
 
         try:
-            future = self.process_executor.submit(backend.execute_plan)
+            future = self.executor.submit(backend.execute_plan)
             future.add_done_callback(
                 lambda result: self.execute_queue.put((result, backend, request_id, mode)))
         except Exception as error:
@@ -253,10 +261,11 @@ class App:
     # =========================================================
 
     def close(self) -> None:
-
-        self.thread_executor.shutdown()
-        self.process_executor.shutdown()
-
+        if self.execution_in_progress:
+            self._notice("Please wait until the current operation finishes.")
+            return
+        
+        self.executor.shutdown()
         self.main_window.destroy()
 
     def run(self) -> None:

@@ -1,6 +1,6 @@
 # main.py
 from controller import App
-from execution  import ThreadExecutor, ProcessExecutor
+from execution  import ThreadExecutor
 from frontend   import MainWindow, Title, Form, View, Status
 from backend    import Rename, Organize, Copy, Move, Search
 
@@ -17,15 +17,11 @@ factories = {
     "move"     : Move,
     "search"   : Search }
 
-executor = {
-    "thread"  : ThreadExecutor,
-    "process" : ProcessExecutor}
-
 # Initialization The Program
 if __name__ == "__main__":
     app = App(
         main_window  = MainWindow, 
         ui_compounds = ui_compounds, 
         factories    = factories,
-        executor     = executor)
+        executor     = ThreadExecutor(max_workers=4))
     app.run()
